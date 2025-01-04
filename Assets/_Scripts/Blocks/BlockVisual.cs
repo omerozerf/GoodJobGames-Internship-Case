@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace Blocks
@@ -7,7 +8,7 @@ namespace Blocks
     public class BlockVisual : MonoBehaviour
     {
         [SerializeField] private Block _block;
-        [SerializeField] private Image _image;
+        [SerializeField] private SpriteRenderer _spriteRenderer;
         [SerializeField] private Sprite[] _spriteArray;
 
         public event Action<int> OnSpriteChanged;
@@ -17,7 +18,7 @@ namespace Blocks
         {
             if (_spriteArray != null && index >= 0 && index < _spriteArray.Length)
             {
-                _image.sprite = _spriteArray[index];
+                _spriteRenderer.sprite = _spriteArray[index];
                 OnSpriteChanged?.Invoke(index);
             }
             else
@@ -32,9 +33,9 @@ namespace Blocks
             return _block;
         }
 
-        public Image GetImage()
+        public SpriteRenderer GetSpriteRenderer()
         {
-            return _image;
+            return _spriteRenderer;
         }
 
         public void UpdateSpriteBasedOnGroupSize(int groupSize)
