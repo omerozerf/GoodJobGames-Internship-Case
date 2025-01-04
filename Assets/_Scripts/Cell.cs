@@ -32,6 +32,12 @@ public class Cell : MonoBehaviour
     {
         m_Block = block;
 
+        if (block)
+        {
+            m_Block.transform.SetParent(transform);
+            m_Block.SetPosition(m_Row, m_Column);
+        }
+
         OnBlockChanged?.Invoke(block);
     }
 
@@ -52,6 +58,7 @@ public class Cell : MonoBehaviour
 
     public void ClearBlock()
     {
+        m_Block.DestroySelf();
         SetBlock(null);
     }
 }

@@ -9,6 +9,33 @@ namespace Blocks
         [SerializeField] private BlockVisual _visual;
         [SerializeField] private BlockMatcher _matcher;
 
+        private Cell m_Cell;
+
+
+        public void SetPosition(int row, int column)
+        {
+            transform.position = new Vector3(column, row);
+        }
+
+        public void SetCell(Cell cell)
+        {
+            m_Cell = cell;
+        }
+
+        public Cell GetCell()
+        {
+            return m_Cell;
+        }
+
+        public void ResetPosition()
+        {
+            transform.position = Vector3.zero;
+        }
+
+        public void DestroySelf()
+        {
+            Destroy(gameObject);
+        }
 
         public BlockColor GetColor()
         {

@@ -372,6 +372,13 @@ MonoBehaviour:
   _rows: 10
   _columns: 12
   _cellPrefab: {fileID: 4632056171363456540, guid: 12b10c92e81994db7965ed8a51f88dd2, type: 3}
+  _blockPrefabArray:
+  - {fileID: 502827331108931231, guid: 1695630bf581e4d7ab33e64708f733e9, type: 3}
+  - {fileID: 502827331108931231, guid: 814dab3bf02f6453cbe117a458519468, type: 3}
+  - {fileID: 502827331108931231, guid: 270af2051587e4db984c764889864188, type: 3}
+  - {fileID: 502827331108931231, guid: c49acf57a33be44bdb337c1d1b59f56d, type: 3}
+  - {fileID: 502827331108931231, guid: fb8ad5691acf04a4fbb40b0181a04c34, type: 3}
+  - {fileID: 502827331108931231, guid: c5a5eb673ea454cdebbdfb2d40b4ca57, type: 3}
 --- !u!4 &1153479131
 Transform:
   m_ObjectHideFlags: 0

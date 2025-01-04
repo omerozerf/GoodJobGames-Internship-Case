@@ -9,7 +9,7 @@ namespace Blocks
 
         public bool Match(Block other)
         {
-            if (other == null) return false;
+            if (!other) return false;
             return _block.GetColor() == other.GetColor();
         }
     }
