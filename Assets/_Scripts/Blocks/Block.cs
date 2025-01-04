@@ -1,4 +1,3 @@
-using _Scripts.Blocks;
 using UnityEngine;
 
 namespace Blocks

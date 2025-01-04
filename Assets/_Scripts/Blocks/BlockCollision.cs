@@ -1,7 +1,6 @@
-using Blocks;
 using UnityEngine;
 
-namespace _Scripts.Blocks
+namespace Blocks
 {
     public class BlockCollision : MonoBehaviour
     {
