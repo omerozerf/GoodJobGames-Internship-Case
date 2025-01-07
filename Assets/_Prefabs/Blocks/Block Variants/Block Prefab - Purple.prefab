@@ -8,6 +8,26 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1126976803649899564, guid: 57b5691957b0040a4bea1535ff8a2b8d, type: 3}
+      propertyPath: _spriteArray.Array.size
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 1126976803649899564, guid: 57b5691957b0040a4bea1535ff8a2b8d, type: 3}
+      propertyPath: '_spriteArray.Array.data[0]'
+      value: 
+      objectReference: {fileID: 8161472552560778960, guid: 4104fe0050a934ae48e91bb4df2bedae, type: 3}
+    - target: {fileID: 1126976803649899564, guid: 57b5691957b0040a4bea1535ff8a2b8d, type: 3}
+      propertyPath: '_spriteArray.Array.data[1]'
+      value: 
+      objectReference: {fileID: -6416537123964203564, guid: 389be565cf48a43549cdb99d31d98fdd, type: 3}
+    - target: {fileID: 1126976803649899564, guid: 57b5691957b0040a4bea1535ff8a2b8d, type: 3}
+      propertyPath: '_spriteArray.Array.data[2]'
+      value: 
+      objectReference: {fileID: -2693315669398477313, guid: 402f212e157a94f50b9c16d427174a1f, type: 3}
+    - target: {fileID: 1126976803649899564, guid: 57b5691957b0040a4bea1535ff8a2b8d, type: 3}
+      propertyPath: '_spriteArray.Array.data[3]'
+      value: 
+      objectReference: {fileID: 1386842339749069192, guid: d564237c2004845fc8e2371043fb32fd, type: 3}
     - target: {fileID: 3036083899303520212, guid: 57b5691957b0040a4bea1535ff8a2b8d, type: 3}
       propertyPath: _color
       value: 3

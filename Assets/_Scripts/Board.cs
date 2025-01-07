@@ -83,6 +83,48 @@ public class Board : MonoBehaviour
                 }
             }
         }
+
+        UpdateAllBlockSpritesBasedOnGroupSize();
+    }
+
+    private void UpdateAllBlockSpritesBasedOnGroupSize()
+    {
+        // Tüm hücreleri kontrol etmek için bir visited matrisi
+        bool[][] visited = new bool[_rows][];
+        for (int index = 0; index < _rows; index++)
+        {
+            visited[index] = new bool[_columns];
+        }
+
+        for (int row = 0; row < _rows; row++)
+        {
+            for (int col = 0; col < _columns; col++)
+            {
+                // Eğer hücre zaten kontrol edildiyse atla
+                if (visited[row][col]) continue;
+
+                var block = m_Cells[row, col].GetBlock();
+                if (block != null)
+                {
+                    // FloodFill ile bu blok grubunu bul
+                    List<Cell> groupCells = FloodFill(row, col, cell =>
+                        cell.GetBlock()?.GetColor() == block.GetColor());
+
+                    // Grup hücrelerini visited olarak işaretle
+                    foreach (var cell in groupCells)
+                    {
+                        visited[cell.GetRow()][cell.GetColumn()] = true;
+                    }
+
+                    // Grup boyutuna göre tüm blokların sprite'ını güncelle
+                    foreach (var cell in groupCells)
+                    {
+                        var groupBlock = cell.GetBlock();
+                        groupBlock?.GetVisual()?.UpdateSpriteBasedOnGroupSize(groupCells.Count);
+                    }
+                }
+            }
+        }
     }
 
     public void ClearRegion(int startRow, int startCol)

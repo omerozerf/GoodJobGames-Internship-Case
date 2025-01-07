@@ -21,10 +21,6 @@ namespace Blocks
                 _spriteRenderer.sprite = _spriteArray[index];
                 OnSpriteChanged?.Invoke(index);
             }
-            else
-            {
-                Debug.LogError("Invalid sprite index: " + index);
-            }
         }
 
 
