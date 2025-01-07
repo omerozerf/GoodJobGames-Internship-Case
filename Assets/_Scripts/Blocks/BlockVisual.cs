@@ -38,6 +38,11 @@ namespace Blocks
             return _spriteRenderer;
         }
 
+        public void SetOrderInLayer(int order)
+        {
+            _spriteRenderer.sortingOrder = order;
+        }
+
         public void UpdateSpriteBasedOnGroupSize(int groupSize)
         {
             switch (groupSize)
