@@ -69,6 +69,21 @@ public class Board : MonoBehaviour
         return matchedCells;
     }
 
+    private void UpdateBlockSortingOrder()
+    {
+        for (int row = 0; row < _rows; row++)
+        {
+            for (int col = 0; col < _columns; col++)
+            {
+                var block = m_Cells[row, col].GetBlock();
+                if (block != null)
+                {
+                    int sortingOrder = row;
+                    block.GetVisual().SetOrderInLayer(sortingOrder);
+                }
+            }
+        }
+    }
     public void ClearRegion(int startRow, int startCol)
     {
         Func<Cell, bool> matchCriteria = cell => cell.GetBlock()?.GetColor() == m_Cells[startRow, startCol].GetBlock()?.GetColor();
@@ -120,7 +135,11 @@ public class Board : MonoBehaviour
             cell.ClearBlock();
         }
 
-        DOVirtual.DelayedCall(0.6f, FillEmptyCells);
+        DOVirtual.DelayedCall(0.6f, () =>
+        {
+            FillEmptyCells();
+            UpdateBlockSortingOrder();
+        });
     }
 
     private void FillEmptyCells()
@@ -158,6 +177,8 @@ public class Board : MonoBehaviour
                 }
             }
         }
+
+        UpdateBlockSortingOrder();
     }
 
     private Block CreateRandomBlock()
