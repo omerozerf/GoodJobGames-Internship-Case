@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Blocks;
 using UnityEngine;
-using Random = UnityEngine.Random;
+using DG.Tweening;
 
 public class Board : MonoBehaviour
 {
@@ -12,7 +12,7 @@ public class Board : MonoBehaviour
     [SerializeField] private Block[] _blockPrefabArray;
 
     private Cell[,] m_Cells;
-
+    private bool flag;
 
     private void Start()
     {
@@ -29,21 +29,57 @@ public class Board : MonoBehaviour
             RaycastHit2D hit = Physics2D.Raycast(mousePosition, Vector2.zero);
             if (hit.collider != null)
             {
-                Debug.Log("Hit: " + hit.collider.name);
                 var blockCollision = hit.collider.GetComponent<BlockCollision>();
                 var block = blockCollision?.GetBlock();
                 if (block != null)
                 {
-                    var group = DetectGroup(block.GetCell());
-                    if (group.Count >= 2)
-                    {
-                        ClearMatchedCells(group);
-                    }
+                    ClearRegion(block.GetCell().GetRow(), block.GetCell().GetColumn());
                 }
             }
         }
     }
 
+    public List<Cell> FloodFill(int startRow, int startCol, Func<Cell, bool> matchCriteria)
+    {
+        List<Cell> matchedCells = new List<Cell>();
+        bool[][] visited = new bool[_rows][];
+        for (int index = 0; index < _rows; index++)
+        {
+            visited[index] = new bool[_columns];
+        }
+
+        void Fill(int row, int col)
+        {
+            if (row < 0 || row >= _rows || col < 0 || col >= _columns)
+                return;
+
+            if (visited[row][col] || !matchCriteria(m_Cells[row, col]))
+                return;
+
+            visited[row][col] = true;
+            matchedCells.Add(m_Cells[row, col]);
+
+            Fill(row - 1, col); // Up
+            Fill(row + 1, col); // Down
+            Fill(row, col - 1); // Left
+            Fill(row, col + 1); // Right
+        }
+
+        Fill(startRow, startCol);
+        return matchedCells;
+    }
+
+    public void ClearRegion(int startRow, int startCol)
+    {
+        Func<Cell, bool> matchCriteria = cell => cell.GetBlock()?.GetColor() == m_Cells[startRow, startCol].GetBlock()?.GetColor();
+
+        List<Cell> matchedCells = FloodFill(startRow, startCol, matchCriteria);
+
+        if (matchedCells.Count >= 2)
+        {
+            ClearMatchedCells(matchedCells);
+        }
+    }
 
     private void InitializeBoard()
     {
@@ -69,90 +105,55 @@ public class Board : MonoBehaviour
         return null;
     }
 
-    public List<Cell> DetectGroup(Cell startCell)
-    {
-        if (startCell == null || startCell.GetBlock() == null)
-        {
-            return new List<Cell>();
-        }
 
-        var group = new List<Cell>();
-        bool[,] visited = new bool[_rows, _columns];
-
-        FloodFill(startCell, startCell.GetBlock(), visited, group);
-
-        return group;
-    }
-
-    private void FloodFill(Cell cell, Block targetBlock, bool[,] visited, List<Cell> group)
-    {
-        if (cell == null)
-            return;
-
-        int row = cell.GetRow();
-        int col = cell.GetColumn();
-
-        // Hücre sınırlarını kontrol et
-        if (row < 0 || row >= _rows || col < 0 || col >= _columns)
-            return;
-
-        // Daha önce ziyaret edilmiş mi kontrol et
-        if (visited[row, col])
-            return;
-
-        // Hücre boş mu veya hedef blok ile eşleşmiyor mu kontrol et
-        if (cell.GetBlock() == null || !cell.GetBlock().GetMatcher().Match(targetBlock))
-            return;
-
-        // Hücreyi ziyaret edilmiş olarak işaretle
-        visited[row, col] = true;
-
-        // Gruba ekle
-        group.Add(cell);
-
-        // Komşuları kontrol et
-        FloodFill(GetCell(row - 1, col), targetBlock, visited, group); // Yukarı
-        FloodFill(GetCell(row + 1, col), targetBlock, visited, group); // Aşağı
-        FloodFill(GetCell(row, col - 1), targetBlock, visited, group); // Sol
-        FloodFill(GetCell(row, col + 1), targetBlock, visited, group); // Sağ
-    }
 
     public void ClearMatchedCells(List<Cell> matchedCells)
     {
-        Debug.Log("sadadwa");
         foreach (var cell in matchedCells)
         {
+            var block = cell.GetBlock();
+            if (block != null)
+            {
+                block.transform.DOScale(Vector3.zero, 0.5f).SetEase(Ease.InBack)
+                    .OnComplete(() => Destroy(block.gameObject));
+            }
             cell.ClearBlock();
         }
 
-        // FillEmptyCells();
+        DOVirtual.DelayedCall(0.6f, FillEmptyCells);
     }
 
     private void FillEmptyCells()
     {
         for (int col = 0; col < _columns; col++)
         {
-            for (int row = _rows - 1; row >= 0; row--)
+            for (int row = 0; row < _rows; row++)
             {
                 if (m_Cells[row, col].GetBlock() == null)
                 {
-                    // Üst hücrelerden blok kaydır
-                    for (int r = row - 1; r >= 0; r--)
+                    for (int r = row + 1; r < _rows; r++)
                     {
                         if (m_Cells[r, col].GetBlock() != null)
                         {
-                            m_Cells[row, col].SetBlock(m_Cells[r, col].GetBlock());
+                            var block = m_Cells[r, col].GetBlock();
+
+                            m_Cells[row, col].SetBlock(block);
                             m_Cells[r, col].ClearBlock();
+                            block.SetCell(m_Cells[row, col]);
+
+                            block.transform.DOMove(m_Cells[row, col].transform.position, 0.3f).SetEase(Ease.OutBounce);
                             break;
                         }
                     }
 
-                    // Eğer yukarıda blok yoksa yeni bir blok ekle
                     if (m_Cells[row, col].GetBlock() == null)
                     {
                         Block newBlock = CreateRandomBlock();
                         m_Cells[row, col].SetBlock(newBlock);
                         newBlock.SetCell(m_Cells[row, col]);
+
+                        newBlock.transform.position = m_Cells[row, col].transform.position + Vector3.up * 2;
+                        newBlock.transform.DOMove(m_Cells[row, col].transform.position, 0.5f).SetEase(Ease.OutBounce);
                     }
                 }
             }
@@ -161,6 +162,6 @@ public class Board : MonoBehaviour
 
     private Block CreateRandomBlock()
     {
-        return Instantiate(_blockPrefabArray[Random.Range(0, _blockPrefabArray.Length)]);
+        return Instantiate(_blockPrefabArray[UnityEngine.Random.Range(0, _blockPrefabArray.Length)]);
     }
 }

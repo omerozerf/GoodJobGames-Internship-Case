@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace Blocks
@@ -11,6 +12,10 @@ namespace Blocks
 
         private Cell m_Cell;
 
+        private void Start()
+        {
+            name = _color.ToString();
+        }
 
         public void SetPosition(int row, int column)
         {

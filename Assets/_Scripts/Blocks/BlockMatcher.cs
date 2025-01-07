@@ -6,10 +6,9 @@ namespace Blocks
     {
         [SerializeField] private Block _block;
 
-
         public bool Match(Block other)
         {
-            if (!other) return false;
+            if (!_block || !other) return false;
             return _block.GetColor() == other.GetColor();
         }
     }

@@ -58,7 +58,6 @@ public class Cell : MonoBehaviour
 
     public void ClearBlock()
     {
-        m_Block.DestroySelf();
         SetBlock(null);
     }
 }
