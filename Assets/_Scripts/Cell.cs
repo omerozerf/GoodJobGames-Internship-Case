@@ -35,7 +35,6 @@ public class Cell : MonoBehaviour
         if (block)
         {
             m_Block.transform.SetParent(transform);
-            m_Block.SetPosition(m_Row, m_Column);
         }
 
         OnBlockChanged?.Invoke(block);
