@@ -369,8 +369,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59e365d023f349d5a362b8d81a6fe959, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _rows: 10
-  _columns: 12
+  _rows: 5
+  _columns: 5
   _cellPrefab: {fileID: 4632056171363456540, guid: 12b10c92e81994db7965ed8a51f88dd2, type: 3}
   _blockPrefabArray:
   - {fileID: 502827331108931231, guid: 1695630bf581e4d7ab33e64708f733e9, type: 3}

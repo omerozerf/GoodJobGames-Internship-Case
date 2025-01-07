@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Blocks;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using DG.Tweening;
 
@@ -17,33 +19,53 @@ public class Board : MonoBehaviour
     {
         CenterCamera();
         InitializeBoard();
-        FillEmptyCells();
+        FillEmptyCellsAsync();
+
+        if (!CheckForPossibleMoves())
+        {
+            Debug.Log("Deadlock detected on board initialization! Shuffling the board.");
+            ShuffleBoard();
+        }
     }
 
-    private void Update()
+    private async void Update()
     {
-        if (Input.GetMouseButtonDown(0))
+        try
         {
-            Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-
-            RaycastHit2D hit = Physics2D.Raycast(mousePosition, Vector2.zero);
-            if (hit.collider != null)
+            if (Input.GetMouseButtonDown(0))
             {
-                var blockCollision = hit.collider.GetComponent<BlockCollision>();
-                var block = blockCollision?.GetBlock();
-                if (block != null)
+                Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+                var hit = Physics2D.Raycast(mousePosition, Vector2.zero);
+                if (hit.collider != null)
                 {
-                    ClearRegion(block.GetCell().GetRow(), block.GetCell().GetColumn());
+                    var blockCollision = hit.collider.GetComponent<BlockCollision>();
+                    var block = blockCollision?.GetBlock();
+                    if (block != null)
+                    {
+                        await ClearRegionAsync(block.GetCell().GetRow(), block.GetCell().GetColumn());
+
+                        // After clearing blocks and updating the board, check for a deadlock
+                        if (!CheckForPossibleMoves())
+                        {
+                            Debug.Log("Deadlock detected! Shuffling the board.");
+                            ShuffleBoard();
+                        }
+                    }
                 }
             }
+        }
+        catch (Exception e)
+        {
+            throw; // TODO handle exception
         }
     }
 
     public List<Cell> FloodFill(int startRow, int startCol, Func<Cell, bool> matchCriteria)
     {
-        List<Cell> matchedCells = new List<Cell>();
-        bool[][] visited = new bool[_rows][];
-        for (int index = 0; index < _rows; index++)
+        var matchedCells = new List<Cell>();
+        var visited = new bool[_rows][];
+        for (var index = 0; index < _rows; index++)
         {
             visited[index] = new bool[_columns];
         }
@@ -71,14 +93,14 @@ public class Board : MonoBehaviour
 
     private void UpdateBlockSortingOrder()
     {
-        for (int row = 0; row < _rows; row++)
+        for (var row = 0; row < _rows; row++)
         {
-            for (int col = 0; col < _columns; col++)
+            for (var col = 0; col < _columns; col++)
             {
                 var block = m_Cells[row, col].GetBlock();
                 if (block != null)
                 {
-                    int sortingOrder = row;
+                    var sortingOrder = row;
                     block.GetVisual().SetOrderInLayer(sortingOrder);
                 }
             }
@@ -90,15 +112,15 @@ public class Board : MonoBehaviour
     private void UpdateAllBlockSpritesBasedOnGroupSize()
     {
         // Tüm hücreleri kontrol etmek için bir visited matrisi
-        bool[][] visited = new bool[_rows][];
-        for (int index = 0; index < _rows; index++)
+        var visited = new bool[_rows][];
+        for (var index = 0; index < _rows; index++)
         {
             visited[index] = new bool[_columns];
         }
 
-        for (int row = 0; row < _rows; row++)
+        for (var row = 0; row < _rows; row++)
         {
-            for (int col = 0; col < _columns; col++)
+            for (var col = 0; col < _columns; col++)
             {
                 // Eğer hücre zaten kontrol edildiyse atla
                 if (visited[row][col]) continue;
@@ -107,7 +129,7 @@ public class Board : MonoBehaviour
                 if (block != null)
                 {
                     // FloodFill ile bu blok grubunu bul
-                    List<Cell> groupCells = FloodFill(row, col, cell =>
+                    var groupCells = FloodFill(row, col, cell =>
                         cell.GetBlock()?.GetColor() == block.GetColor());
 
                     // Grup hücrelerini visited olarak işaretle
@@ -127,16 +149,16 @@ public class Board : MonoBehaviour
         }
     }
 
-    public void ClearRegion(int startRow, int startCol)
+    public async UniTask ClearRegionAsync(int startRow, int startCol)
     {
         Func<Cell, bool> matchCriteria = cell =>
             cell.GetBlock()?.GetColor() == m_Cells[startRow, startCol].GetBlock()?.GetColor();
 
-        List<Cell> matchedCells = FloodFill(startRow, startCol, matchCriteria);
+        var matchedCells = FloodFill(startRow, startCol, matchCriteria);
 
         if (matchedCells.Count >= 2)
         {
-            ClearMatchedCells(matchedCells);
+            await ClearMatchedCellsAsync(matchedCells);
         }
     }
 
@@ -167,36 +189,46 @@ public class Board : MonoBehaviour
 
 
 
-    public void ClearMatchedCells(List<Cell> matchedCells)
+    public async UniTask ClearMatchedCellsAsync(List<Cell> matchedCells)
     {
+        var tasks = new List<UniTask>();
+
         foreach (var cell in matchedCells)
         {
             var block = cell.GetBlock();
             if (block != null)
             {
-                block.transform.DOScale(Vector3.zero, 0.5f).SetEase(Ease.InBack)
-                    .OnComplete(() => Destroy(block.gameObject));
+                var task = block.transform.DOScale(Vector3.zero, 0.5f).SetEase(Ease.InBack)
+                    .OnComplete(() => Destroy(block.gameObject)).ToUniTask();
+                tasks.Add(task);
             }
 
             cell.ClearBlock();
         }
 
-        DOVirtual.DelayedCall(0.6f, () =>
+        await UniTask.WhenAll(tasks);
+        await FillEmptyCellsAsync();
+
+        UpdateBlockSortingOrder();
+
+        // Check for deadlocks after the board updates
+        if (!CheckForPossibleMoves())
         {
-            FillEmptyCells();
-            UpdateBlockSortingOrder();
-        });
+            Debug.Log("Deadlock detected! Shuffling the board.");
+            ShuffleBoard();
+        }
     }
 
-    private void FillEmptyCells()
+    private async UniTask FillEmptyCellsAsync()
     {
-        for (int col = 0; col < _columns; col++)
+        var tasks = new List<UniTask>();
+        for (var col = 0; col < _columns; col++)
         {
-            for (int row = 0; row < _rows; row++)
+            for (var row = 0; row < _rows; row++)
             {
                 if (m_Cells[row, col].GetBlock() == null)
                 {
-                    for (int r = row + 1; r < _rows; r++)
+                    for (var r = row + 1; r < _rows; r++)
                     {
                         if (m_Cells[r, col].GetBlock() != null)
                         {
@@ -206,37 +238,40 @@ public class Board : MonoBehaviour
                             m_Cells[r, col].ClearBlock();
                             block.SetCell(m_Cells[row, col]);
 
-                            block.transform.DOMove(m_Cells[row, col].transform.position, 0.3f).SetEase(Ease.OutBounce);
+                            var task = block.transform.DOMove(m_Cells[row, col].transform.position, 0.3f).SetEase(Ease.OutBounce).
+                                ToUniTask();
+                            tasks.Add(task);
                             break;
                         }
                     }
 
                     if (m_Cells[row, col].GetBlock() == null)
                     {
-                        Block newBlock = CreateRandomBlock(col);
+                        var newBlock = CreateRandomBlock(col);
                         m_Cells[row, col].SetBlock(newBlock);
                         newBlock.SetCell(m_Cells[row, col]);
 
-                        newBlock.transform.DOMove(m_Cells[row, col].transform.position, 0.5f).SetEase(Ease.OutBounce);
+                        var task =newBlock.transform.DOMove(m_Cells[row, col].transform.position, 0.5f).SetEase(Ease.OutBounce).ToUniTask();
+                        tasks.Add(task);
                     }
                 }
             }
         }
-
         UpdateBlockSortingOrder();
+        await UniTask.WhenAll(tasks);
     }
 
     private void CenterCamera()
     {
-        Camera mainCamera = Camera.main;
+        var mainCamera = Camera.main;
         if (mainCamera != null)
         {
-            float centerX = (_columns - 1) * 0.5f;
-            float centerY = (_rows - 1) * 0.5f;
+            var centerX = (_columns - 1) * 0.5f;
+            var centerY = (_rows - 1) * 0.5f;
 
             mainCamera.transform.position = new Vector3(centerX, centerY, mainCamera.transform.position.z);
 
-            float aspectRatio = mainCamera.aspect;
+            var aspectRatio = mainCamera.aspect;
             float boardHeight = _rows;
             float boardWidth = _columns;
 
@@ -246,20 +281,143 @@ public class Board : MonoBehaviour
 
     private Block CreateRandomBlock(int column)
     {
-        Camera mainCamera = Camera.main;
+        var mainCamera = Camera.main;
 
-        float cameraTopY = mainCamera.transform.position.y + mainCamera.orthographicSize;
+        var cameraTopY = mainCamera.transform.position.y + mainCamera.orthographicSize;
 
-        Vector3 spawnPosition = new Vector3(
+        var spawnPosition = new Vector3(
             m_Cells[0, column].transform.position.x,
-            cameraTopY + 1.0f,
+            cameraTopY + 2.0f,
             0
         );
 
-        Block newBlock = Instantiate(_blockPrefabArray[UnityEngine.Random.Range(0, _blockPrefabArray.Length)]);
+        var newBlock = Instantiate(_blockPrefabArray[UnityEngine.Random.Range(0, _blockPrefabArray.Length)]);
 
         newBlock.transform.position = spawnPosition;
 
         return newBlock;
+    }
+
+    private bool CheckForPossibleMoves()
+{
+    for (var row = 0; row < _rows; row++)
+    {
+        for (var col = 0; col < _columns; col++)
+        {
+            var currentBlock = m_Cells[row, col].GetBlock();
+            if (currentBlock == null) continue;
+
+            // Check horizontal and vertical swaps for possible matches
+            if (CheckSwapForMatch(row, col, row, col + 1) || // Right
+                CheckSwapForMatch(row, col, row + 1, col))   // Down
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+private bool CheckSwapForMatch(int row1, int col1, int row2, int col2)
+{
+    if (row2 < 0 || row2 >= _rows || col2 < 0 || col2 >= _columns) return false;
+
+    // Temporarily swap blocks
+    var block1 = m_Cells[row1, col1].GetBlock();
+    var block2 = m_Cells[row2, col2].GetBlock();
+
+    m_Cells[row1, col1].SetBlock(block2);
+    m_Cells[row2, col2].SetBlock(block1);
+
+    var isMatch = CheckForMatchesAt(row1, col1) || CheckForMatchesAt(row2, col2);
+
+    // Revert the swap
+    m_Cells[row1, col1].SetBlock(block1);
+    m_Cells[row2, col2].SetBlock(block2);
+
+    return isMatch;
+}
+
+private void ShuffleBoard()
+{
+    // Flatten the board into a list
+    var blocks = new List<Block>();
+    for (var row = 0; row < _rows; row++)
+    {
+        for (var col = 0; col < _columns; col++)
+        {
+            var block = m_Cells[row, col].GetBlock();
+            if (block != null)
+            {
+                blocks.Add(block);
+                m_Cells[row, col].ClearBlock();
+            }
+        }
+    }
+
+    // Shuffle using a deterministic algorithm
+    var random = new System.Random(); // Replace with a seeded RNG if reproducibility is needed
+    blocks = blocks.OrderBy(_ => random.Next()).ToList();
+
+    // Place blocks back on the board
+    var index = 0;
+    for (var row = 0; row < _rows; row++)
+    {
+        for (var col = 0; col < _columns; col++)
+        {
+            if (index < blocks.Count)
+            {
+                m_Cells[row, col].SetBlock(blocks[index]);
+                blocks[index].SetCell(m_Cells[row, col]);
+
+                blocks[index].transform.DOMove(m_Cells[row, col].transform.position, 0.5f).SetEase(Ease.OutBounce);
+
+                index++;
+            }
+        }
+    }
+
+    // Ensure no immediate matches exist
+    if (!CheckForPossibleMoves())
+    {
+        ShuffleBoard(); // Recursive shuffle if still in deadlock
+    }
+}
+
+private bool CheckForMatchesAt(int row, int col)
+{
+    var block = m_Cells[row, col].GetBlock();
+    if (block == null) return false;
+
+                                     // Check horizontal and vertical matches
+              return CheckDirectionForMatch(row, col, 0, 1) || // Horizontal
+           CheckDirectionForMatch(row, col, 1, 0);  // Vertical
+                }
+
+            private bool CheckDirectionForMatch(int row, int col, int rowDelta, int colDelta)
+                    {
+         var block = m_Cells[row, col].GetBlock();
+             if (block == null) return false;
+
+                                    var matchCount = 1;
+
+    // Check in one direction
+        for (var i = 1; i < 3; i++)
+        {
+            var newRow = row + i * rowDelta;
+            var newCol = col + i * colDelta;
+
+            if (newRow >= 0 && newRow < _rows && newCol >= 0 && newCol < _columns &&
+                m_Cells[newRow, newCol].GetBlock()?.GetColor() == block.GetColor())
+            {
+                matchCount++;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        return matchCount >= 3;
     }
 }
