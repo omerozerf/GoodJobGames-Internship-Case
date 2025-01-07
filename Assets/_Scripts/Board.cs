@@ -299,125 +299,82 @@ public class Board : MonoBehaviour
     }
 
     private bool CheckForPossibleMoves()
-{
-    for (var row = 0; row < _rows; row++)
     {
-        for (var col = 0; col < _columns; col++)
+        var visited = new bool[_rows][];
+        for (int index = 0; index < _rows; index++)
         {
-            var currentBlock = m_Cells[row, col].GetBlock();
-            if (currentBlock == null) continue;
-
-            // Check horizontal and vertical swaps for possible matches
-            if (CheckSwapForMatch(row, col, row, col + 1) || // Right
-                CheckSwapForMatch(row, col, row + 1, col))   // Down
-            {
-                return true;
-            }
+            visited[index] = new bool[_columns];
         }
-    }
-    return false;
-}
 
-private bool CheckSwapForMatch(int row1, int col1, int row2, int col2)
-{
-    if (row2 < 0 || row2 >= _rows || col2 < 0 || col2 >= _columns) return false;
-
-    // Temporarily swap blocks
-    var block1 = m_Cells[row1, col1].GetBlock();
-    var block2 = m_Cells[row2, col2].GetBlock();
-
-    m_Cells[row1, col1].SetBlock(block2);
-    m_Cells[row2, col2].SetBlock(block1);
-
-    var isMatch = CheckForMatchesAt(row1, col1) || CheckForMatchesAt(row2, col2);
-
-    // Revert the swap
-    m_Cells[row1, col1].SetBlock(block1);
-    m_Cells[row2, col2].SetBlock(block2);
-
-    return isMatch;
-}
-
-private void ShuffleBoard()
-{
-    // Flatten the board into a list
-    var blocks = new List<Block>();
-    for (var row = 0; row < _rows; row++)
-    {
-        for (var col = 0; col < _columns; col++)
+        for (int row = 0; row < _rows; row++)
         {
-            var block = m_Cells[row, col].GetBlock();
-            if (block != null)
+            for (int col = 0; col < _columns; col++)
             {
-                blocks.Add(block);
-                m_Cells[row, col].ClearBlock();
-            }
-        }
-    }
+                if (visited[row][col] || m_Cells[row, col].GetBlock() == null)
+                    continue;
 
-    // Shuffle using a deterministic algorithm
-    var random = new System.Random(); // Replace with a seeded RNG if reproducibility is needed
-    blocks = blocks.OrderBy(_ => random.Next()).ToList();
+                var groupCells = FloodFill(row, col, cell =>
+                    cell.GetBlock()?.GetColor() == m_Cells[row, col].GetBlock()?.GetColor());
 
-    // Place blocks back on the board
-    var index = 0;
-    for (var row = 0; row < _rows; row++)
-    {
-        for (var col = 0; col < _columns; col++)
-        {
-            if (index < blocks.Count)
-            {
-                m_Cells[row, col].SetBlock(blocks[index]);
-                blocks[index].SetCell(m_Cells[row, col]);
-
-                blocks[index].transform.DOMove(m_Cells[row, col].transform.position, 0.5f).SetEase(Ease.OutBounce);
-
-                index++;
-            }
-        }
-    }
-
-    // Ensure no immediate matches exist
-    if (!CheckForPossibleMoves())
-    {
-        ShuffleBoard(); // Recursive shuffle if still in deadlock
-    }
-}
-
-private bool CheckForMatchesAt(int row, int col)
-{
-    var block = m_Cells[row, col].GetBlock();
-    if (block == null) return false;
-
-                                     // Check horizontal and vertical matches
-              return CheckDirectionForMatch(row, col, 0, 1) || // Horizontal
-           CheckDirectionForMatch(row, col, 1, 0);  // Vertical
+                if (groupCells.Count >= 2)
+                {
+                    return true;
                 }
 
-            private bool CheckDirectionForMatch(int row, int col, int rowDelta, int colDelta)
-                    {
-         var block = m_Cells[row, col].GetBlock();
-             if (block == null) return false;
-
-                                    var matchCount = 1;
-
-    // Check in one direction
-        for (var i = 1; i < 3; i++)
-        {
-            var newRow = row + i * rowDelta;
-            var newCol = col + i * colDelta;
-
-            if (newRow >= 0 && newRow < _rows && newCol >= 0 && newCol < _columns &&
-                m_Cells[newRow, newCol].GetBlock()?.GetColor() == block.GetColor())
-            {
-                matchCount++;
-            }
-            else
-            {
-                break;
+                foreach (var cell in groupCells)
+                {
+                    visited[cell.GetRow()][cell.GetColumn()] = true;
+                }
             }
         }
 
-        return matchCount >= 3;
+        return false;
+    }
+
+
+    private void ShuffleBoard()
+    {
+        // Flatten the board into a list
+        var blocks = new List<Block>();
+        for (var row = 0; row < _rows; row++)
+        {
+            for (var col = 0; col < _columns; col++)
+            {
+                var block = m_Cells[row, col].GetBlock();
+                if (block != null)
+                {
+                    blocks.Add(block);
+                    m_Cells[row, col].ClearBlock();
+                }
+            }
+        }
+
+        var random = new System.Random();
+        blocks = blocks.OrderBy(_ => random.Next()).ToList();
+
+        var index = 0;
+        for (var row = 0; row < _rows; row++)
+        {
+            for (var col = 0; col < _columns; col++)
+            {
+                if (index < blocks.Count)
+                {
+                    m_Cells[row, col].ClearBlock();
+                    m_Cells[row, col].SetBlock(blocks[index]);
+                    blocks[index].SetCell(m_Cells[row, col]);
+
+                    blocks[index].transform.DOMove(m_Cells[row, col].transform.position, 0.5f).SetEase(Ease.OutBounce);
+
+                    index++;
+                }
+            }
+        }
+
+        if (!CheckForPossibleMoves())
+        {
+            ShuffleBoard();
+        }
+
+        UpdateBlockSortingOrder();
     }
 }
