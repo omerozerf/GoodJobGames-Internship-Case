@@ -12,7 +12,6 @@ public class Board : MonoBehaviour
     [SerializeField] private Block[] _blockPrefabArray;
 
     private Cell[,] m_Cells;
-    private bool flag;
 
     private void Start()
     {
