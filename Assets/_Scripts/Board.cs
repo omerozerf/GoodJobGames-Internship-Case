@@ -16,6 +16,7 @@ public class Board : MonoBehaviour
 
     private void Start()
     {
+        CenterCamera();
         InitializeBoard();
         FillEmptyCells();
     }
@@ -84,9 +85,11 @@ public class Board : MonoBehaviour
             }
         }
     }
+
     public void ClearRegion(int startRow, int startCol)
     {
-        Func<Cell, bool> matchCriteria = cell => cell.GetBlock()?.GetColor() == m_Cells[startRow, startCol].GetBlock()?.GetColor();
+        Func<Cell, bool> matchCriteria = cell =>
+            cell.GetBlock()?.GetColor() == m_Cells[startRow, startCol].GetBlock()?.GetColor();
 
         List<Cell> matchedCells = FloodFill(startRow, startCol, matchCriteria);
 
@@ -117,6 +120,7 @@ public class Board : MonoBehaviour
         {
             return m_Cells[row, col];
         }
+
         return null;
     }
 
@@ -132,6 +136,7 @@ public class Board : MonoBehaviour
                 block.transform.DOScale(Vector3.zero, 0.5f).SetEase(Ease.InBack)
                     .OnComplete(() => Destroy(block.gameObject));
             }
+
             cell.ClearBlock();
         }
 
@@ -167,11 +172,10 @@ public class Board : MonoBehaviour
 
                     if (m_Cells[row, col].GetBlock() == null)
                     {
-                        Block newBlock = CreateRandomBlock();
+                        Block newBlock = CreateRandomBlock(col);
                         m_Cells[row, col].SetBlock(newBlock);
                         newBlock.SetCell(m_Cells[row, col]);
 
-                        newBlock.transform.position = m_Cells[row, col].transform.position + Vector3.up * 2;
                         newBlock.transform.DOMove(m_Cells[row, col].transform.position, 0.5f).SetEase(Ease.OutBounce);
                     }
                 }
@@ -181,8 +185,40 @@ public class Board : MonoBehaviour
         UpdateBlockSortingOrder();
     }
 
-    private Block CreateRandomBlock()
+    private void CenterCamera()
     {
-        return Instantiate(_blockPrefabArray[UnityEngine.Random.Range(0, _blockPrefabArray.Length)]);
+        Camera mainCamera = Camera.main;
+        if (mainCamera != null)
+        {
+            float centerX = (_columns - 1) * 0.5f;
+            float centerY = (_rows - 1) * 0.5f;
+
+            mainCamera.transform.position = new Vector3(centerX, centerY, mainCamera.transform.position.z);
+
+            float aspectRatio = mainCamera.aspect;
+            float boardHeight = _rows;
+            float boardWidth = _columns;
+
+            mainCamera.orthographicSize = Mathf.Max(boardHeight / 2, boardWidth / (2 * aspectRatio)) * 1.5f;
+        }
+    }
+
+    private Block CreateRandomBlock(int column)
+    {
+        Camera mainCamera = Camera.main;
+
+        float cameraTopY = mainCamera.transform.position.y + mainCamera.orthographicSize;
+
+        Vector3 spawnPosition = new Vector3(
+            m_Cells[0, column].transform.position.x,
+            cameraTopY + 1.0f,
+            0
+        );
+
+        Block newBlock = Instantiate(_blockPrefabArray[UnityEngine.Random.Range(0, _blockPrefabArray.Length)]);
+
+        newBlock.transform.position = spawnPosition;
+
+        return newBlock;
     }
 }
