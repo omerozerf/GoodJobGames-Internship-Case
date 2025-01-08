@@ -10,7 +10,6 @@ namespace Managers
         [SerializeField] private Board _board;
         [SerializeField] private Block[] _blockPrefabArray;
         [SerializeField] private Transform _blockPoolTransform;
-        [SerializeField] private int _poolSizeBuffer;
 
         private Dictionary<BlockColor, ObjectPool<Block>> m_BlockPools;
         private Camera m_MainCamera;
@@ -38,7 +37,7 @@ namespace Managers
         private void InitializePools(int rows, int columns)
         {
             m_BlockPools = new Dictionary<BlockColor, ObjectPool<Block>>();
-            var poolSize = (rows * columns / GetColorInGame()) + _poolSizeBuffer;
+            var poolSize = rows * columns;
 
             for (var index = 0; index < GetColorInGame(); index++)
             {
