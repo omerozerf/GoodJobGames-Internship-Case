@@ -15,7 +15,7 @@ public class ObjectPool<T> where T : MonoBehaviour
 
         for (int i = 0; i < initialCount; i++)
         {
-            var obj = Object.Instantiate(m_Prefab, m_Parent);
+            var obj = Object.Instantiate(m_Prefab, parent);
             obj.gameObject.SetActive(false);
             m_Objects.Enqueue(obj);
         }
@@ -23,21 +23,32 @@ public class ObjectPool<T> where T : MonoBehaviour
 
     public T Get()
     {
+        T obj;
+
         if (m_Objects.Count > 0)
         {
-            var obj = m_Objects.Dequeue();
-            obj.gameObject.SetActive(true);
-            return obj;
+            obj = m_Objects.Dequeue();
+        }
+        else
+        {
+            obj = Object.Instantiate(m_Prefab, m_Parent);
         }
 
-        var newObj = Object.Instantiate(m_Prefab, m_Parent);
-        return newObj;
+        obj.gameObject.SetActive(true);
+        return obj;
     }
 
     public void Return(T obj, Transform parent)
     {
-        obj.gameObject.SetActive(false);
-        obj.transform.SetParent(parent);
-        m_Objects.Enqueue(obj);
+        if (!m_Objects.Contains(obj))
+        {
+            obj.gameObject.SetActive(false);
+            obj.transform.SetParent(parent);
+            m_Objects.Enqueue(obj);
+        }
+        else
+        {
+            Debug.LogWarning($"ObjectPool Return: Object {obj.name} is already in the pool!");
+        }
     }
 }
