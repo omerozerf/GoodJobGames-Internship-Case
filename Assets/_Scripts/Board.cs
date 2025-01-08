@@ -127,7 +127,7 @@ public class Board : MonoBehaviour
         foreach (var cell in matchedCells)
         {
             var block = cell.GetBlock();
-            if (block != null)
+            if (block)
             {
                 block.transform.DOScale(Vector3.zero, scaleTime)
                     .SetEase(Ease.InBack)

@@ -11,7 +11,7 @@ namespace Managers
 
         private static GameManager ms_Instance;
 
-        
+
         private void Awake()
         {
             InitializationSingleton();
@@ -19,7 +19,7 @@ namespace Managers
 
         private void InitializationSingleton()
         {
-            if (ms_Instance == null)
+            if (!ms_Instance)
             {
                 ms_Instance = this;
                 DontDestroyOnLoad(gameObject);

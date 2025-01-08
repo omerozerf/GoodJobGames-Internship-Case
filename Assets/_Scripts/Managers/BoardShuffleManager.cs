@@ -49,7 +49,7 @@ namespace Managers
             {
                 for (int col = 0; col < columns; col++)
                 {
-                    if (visited[row][col] || cellArray[row, col].GetBlock() == null)
+                    if (visited[row][col] || !cellArray[row, col].GetBlock())
                         continue;
 
                     var groupCells = FloodFillHelper.Execute(cellArray, rows, columns, row, col, cell =>
@@ -86,7 +86,7 @@ namespace Managers
                 for (var col = 0; col < columns; col++)
                 {
                     var block = cellArray[row, col].GetBlock();
-                    if (block != null)
+                    if (block)
                     {
                         blocks.Add(block);
                         cellArray[row, col].ClearBlock();
