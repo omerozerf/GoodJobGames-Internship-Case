@@ -456,6 +456,7 @@ MonoBehaviour:
   - {fileID: 502827331108931231, guid: fb8ad5691acf04a4fbb40b0181a04c34, type: 3}
   - {fileID: 502827331108931231, guid: c5a5eb673ea454cdebbdfb2d40b4ca57, type: 3}
   _blockPoolTransform: {fileID: 823575035}
+  _poolSizeBuffer: 10
 --- !u!4 &1402333868
 Transform:
   m_ObjectHideFlags: 0
@@ -562,7 +563,7 @@ GameObject:
   - component: {fileID: 2077789371}
   - component: {fileID: 2077789370}
   m_Layer: 0
-  m_Name: Block Sorting Order Manager
+  m_Name: Block Visual Manager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -580,6 +581,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7fde135ca0fd4418b8d0472b56661737, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _board: {fileID: 1153479130}
 --- !u!4 &2077789371
 Transform:
   m_ObjectHideFlags: 0

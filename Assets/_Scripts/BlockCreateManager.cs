@@ -7,6 +7,7 @@ public class BlockCreateManager : MonoBehaviour
 {
     [SerializeField] private Block[] _blockPrefabArray;
     [SerializeField] private Transform _blockPoolTransform;
+    [SerializeField] private int _poolSizeBuffer;
 
     private Dictionary<Block, ObjectPool<Block>> m_BlockPools;
     private Camera m_MainCamera;
@@ -34,7 +35,7 @@ public class BlockCreateManager : MonoBehaviour
     private void InitializePools(int rows, int columns)
     {
         m_BlockPools = new Dictionary<Block, ObjectPool<Block>>();
-        var poolSize = rows * columns;
+        var poolSize = (rows * columns / _blockPrefabArray.Length) + _poolSizeBuffer;
 
         foreach (var blockPrefab in _blockPrefabArray)
         {
@@ -48,7 +49,9 @@ public class BlockCreateManager : MonoBehaviour
 
     private Block GetBlockFromPool(Block prefab)
     {
-        return m_BlockPools[prefab].Get();
+        var block = m_BlockPools[prefab].Get();
+        block.transform.localScale = Vector3.one;
+        return block;
     }
 
 

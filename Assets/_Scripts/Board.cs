@@ -57,6 +57,7 @@ public class Board : MonoBehaviour
                         {
                             ShuffleBoard();
                         }
+                        m_CanInteract = true;
                     }
                 }
             }
@@ -95,48 +96,6 @@ public class Board : MonoBehaviour
 
         Fill(startRow, startCol);
         return matchedCells;
-    }
-
-
-
-    private void UpdateAllBlockSpritesBasedOnGroupSize()
-    {
-        // Tüm hücreleri kontrol etmek için bir visited matrisi
-        var visited = new bool[_rows][];
-        for (var index = 0; index < _rows; index++)
-        {
-            visited[index] = new bool[_columns];
-        }
-
-        for (var row = 0; row < _rows; row++)
-        {
-            for (var col = 0; col < _columns; col++)
-            {
-                // Eğer hücre zaten kontrol edildiyse atla
-                if (visited[row][col]) continue;
-
-                var block = m_Cells[row, col].GetBlock();
-                if (block != null)
-                {
-                    // FloodFill ile bu blok grubunu bul
-                    var groupCells = FloodFill(row, col, cell =>
-                        cell.GetBlock()?.GetColor() == block.GetColor());
-
-                    // Grup hücrelerini visited olarak işaretle
-                    foreach (var cell in groupCells)
-                    {
-                        visited[cell.GetRow()][cell.GetColumn()] = true;
-                    }
-
-                    // Grup boyutuna göre tüm blokların sprite'ını güncelle
-                    foreach (var cell in groupCells)
-                    {
-                        var groupBlock = cell.GetBlock();
-                        groupBlock?.GetVisual()?.UpdateSpriteBasedOnGroupSize(groupCells.Count);
-                    }
-                }
-            }
-        }
     }
 
     public async UniTask ClearRegionAsync(int startRow, int startCol)
@@ -198,7 +157,6 @@ public class Board : MonoBehaviour
 
         await UniTask.WaitForSeconds(scaleTime);
         FillEmptyCellsAsync();
-        m_CanInteract = true;
 
         // Check for deadlocks after the board updates
         if (!CheckForPossibleMoves())
