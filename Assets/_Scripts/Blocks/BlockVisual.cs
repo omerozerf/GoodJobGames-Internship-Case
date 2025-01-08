@@ -37,30 +37,67 @@ namespace Blocks
             _spriteRenderer.sortingOrder = order;
         }
 
-        public void UpdateSpriteBasedOnGroupSize(int groupSize)
+        public void UpdateSpriteBasedOnGroupSize(int groupSize, int colorInGame)
         {
-            switch (groupSize)
+            switch (colorInGame)
             {
-                case > 4 and < 8:
-                {
-                    SetSprite(1); // First icon (index 1)
+                case 6:
+                    if (groupSize < 5)
+                        SetSprite(0);
+                    else if (groupSize <= 7)
+                        SetSprite(1);
+                    else if (groupSize <= 9)
+                        SetSprite(2);
+                    else
+                        SetSprite(3);
                     break;
-                }
-                case > 7 and <= 10:
-                {
-                    SetSprite(2); // Second icon (index 2)
+
+                case 5:
+                case 4:
+                    if (groupSize < 5)
+                        SetSprite(0);
+                    else if (groupSize <= 6)
+                        SetSprite(1);
+                    else if (groupSize <= 8)
+                        SetSprite(2);
+                    else
+                        SetSprite(3);
                     break;
-                }
-                case > 10:
-                {
-                    SetSprite(3); // Third icon (index 3)
+
+                case 3:
+                    if (groupSize < 5)
+                        SetSprite(0);
+                    else if (groupSize == 5)
+                        SetSprite(1);
+                    else if (groupSize <= 7)
+                        SetSprite(2);
+                    else
+                        SetSprite(3);
                     break;
-                }
+
+                case 2:
+                    if (groupSize < 5)
+                        SetSprite(0);
+                    else if (groupSize == 5)
+                        SetSprite(1);
+                    else if (groupSize == 6)
+                        SetSprite(2);
+                    else
+                        SetSprite(3);
+                    break;
+
+                case 1:
+                    if (groupSize < 5)
+                        SetSprite(0);
+                    else if (groupSize == 5)
+                        SetSprite(1);
+                    else
+                        SetSprite(3);
+                    break;
+
                 default:
-                {
-                    SetSprite(0); // Default icon (index 0)
+                    SetSprite(0);
                     break;
-                }
             }
         }
     }

@@ -75,7 +75,8 @@ namespace Managers
                     foreach (var cell in groupCells)
                     {
                         var groupBlock = cell.GetBlock();
-                        groupBlock?.GetVisual()?.UpdateSpriteBasedOnGroupSize(groupCells.Count);
+                        groupBlock?.GetVisual()
+                            ?.UpdateSpriteBasedOnGroupSize(groupCells.Count, GameManager.GetColorsInGame());
                     }
                 }
             }
