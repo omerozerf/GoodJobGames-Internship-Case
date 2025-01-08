@@ -5,34 +5,46 @@ namespace Helpers
 {
     public static class FloodFillHelper
     {
+        private static readonly Stack<(int, int)> STACK = new Stack<(int, int)>(); // Shared stack
+        private static readonly HashSet<(int, int)> VISITED = new HashSet<(int, int)>(); // Shared HashSet
+        private static readonly List<Cell> MATCHED_CELLS = new List<Cell>(); // Shared matchedCells list
+
         public static List<Cell> Execute(Cell[,] cells, int rows, int columns, int startRow, int startCol, Func<Cell, bool> matchCriteria)
         {
-            var matchedCells = new List<Cell>();
-            var visited = new bool[rows][];
-            for (var index = 0; index < rows; index++)
-            {
-                visited[index] = new bool[columns];
-            }
+            // Clear shared collections
+            STACK.Clear();
+            VISITED.Clear();
+            MATCHED_CELLS.Clear();
 
-            void Fill(int row, int col)
+            // Initialize with the starting point
+            STACK.Push((startRow, startCol));
+
+            while (STACK.Count > 0)
             {
+                var (row, col) = STACK.Pop();
+
+                // Boundary check
                 if (row < 0 || row >= rows || col < 0 || col >= columns)
-                    return;
+                    continue;
 
-                if (visited[row][col] || !matchCriteria(cells[row, col]))
-                    return;
+                // Check if already visited or doesn't match criteria
+                if (VISITED.Contains((row, col)) || !matchCriteria(cells[row, col]))
+                    continue;
 
-                visited[row][col] = true;
-                matchedCells.Add(cells[row, col]);
+                // Mark as visited
+                VISITED.Add((row, col));
 
-                Fill(row - 1, col); // Up
-                Fill(row + 1, col); // Down
-                Fill(row, col - 1); // Left
-                Fill(row, col + 1); // Right
+                // Add to matched cells
+                MATCHED_CELLS.Add(cells[row, col]);
+
+                // Push neighbors to stack
+                STACK.Push((row - 1, col)); // Up
+                STACK.Push((row + 1, col)); // Down
+                STACK.Push((row, col - 1)); // Left
+                STACK.Push((row, col + 1)); // Right
             }
 
-            Fill(startRow, startCol);
-            return matchedCells;
+            return MATCHED_CELLS;
         }
     }
 }
