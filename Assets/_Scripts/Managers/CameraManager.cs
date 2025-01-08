@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 namespace Managers
@@ -19,6 +18,7 @@ namespace Managers
         {
             Board.OnInitializeBoard -= HandleOnInitializeBoard;
         }
+
 
         private void HandleOnInitializeBoard(int rows, int columns)
         {

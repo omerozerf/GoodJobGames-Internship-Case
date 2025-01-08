@@ -10,23 +10,17 @@ public class Cell : MonoBehaviour
     private int m_Column;
     private Block m_Block;
 
-    public void SetPosition(int row, int column)
-    {
-        SetRow(row);
-        SetColumn(column);
-
-        transform.position = new Vector3(column, row);
-    }
-
-    public void SetRow(int row)
+    
+    private void SetRow(int row)
     {
         m_Row = row;
     }
 
-    public void SetColumn(int column)
+    private void SetColumn(int column)
     {
         m_Column = column;
     }
+
 
     public void SetBlock(Block block)
     {
@@ -58,5 +52,13 @@ public class Cell : MonoBehaviour
     public void ClearBlock()
     {
         SetBlock(null);
+    }
+
+    public void SetPosition(int row, int column)
+    {
+        SetRow(row);
+        SetColumn(column);
+
+        transform.position = new Vector3(column, row);
     }
 }

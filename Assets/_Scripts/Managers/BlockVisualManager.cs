@@ -47,7 +47,6 @@ namespace Managers
             }
         }
 
-
         private void UpdateAllBlockSpritesBasedOnGroupSize(int rows, int columns, Cell[,] cellArray)
         {
             var visited = new bool[rows][];

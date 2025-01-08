@@ -8,17 +8,21 @@ namespace Helpers
         public static List<Cell> Execute(Cell[,] cells, int rows, int columns, int startRow, int startCol, Func<Cell, bool> matchCriteria)
         {
             var matchedCells = new List<Cell>();
-            var visited = new bool[rows, columns];
+            var visited = new bool[rows][];
+            for (var index = 0; index < rows; index++)
+            {
+                visited[index] = new bool[columns];
+            }
 
             void Fill(int row, int col)
             {
                 if (row < 0 || row >= rows || col < 0 || col >= columns)
                     return;
 
-                if (visited[row, col] || !matchCriteria(cells[row, col]))
+                if (visited[row][col] || !matchCriteria(cells[row, col]))
                     return;
 
-                visited[row, col] = true;
+                visited[row][col] = true;
                 matchedCells.Add(cells[row, col]);
 
                 Fill(row - 1, col); // Up

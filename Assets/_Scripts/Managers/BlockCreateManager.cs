@@ -28,10 +28,12 @@ namespace Managers
             Board.OnInitializeBoard -= HandleOnInitializeBoard;
         }
 
+
         private void HandleOnInitializeBoard(int rows, int columns)
         {
             InitializePools(rows, columns);
         }
+
 
         private void InitializePools(int rows, int columns)
         {
@@ -61,6 +63,7 @@ namespace Managers
             return _board.GetColorsInGame();
         }
 
+        
         public Block CreateRandomBlock(int column, Cell[,] cellArray)
         {
             var keys = m_BlockPools.Keys.ToList();

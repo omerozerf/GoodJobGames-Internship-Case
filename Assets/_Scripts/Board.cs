@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Blocks;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
@@ -134,11 +133,11 @@ public class Board : MonoBehaviour
         {
             for (var row = 0; row < _rows; row++)
             {
-                if (m_Cells[row, col].GetBlock() == null)
+                if (!m_Cells[row, col].GetBlock())
                 {
                     for (var r = row + 1; r < _rows; r++)
                     {
-                        if (m_Cells[r, col].GetBlock() != null)
+                        if (m_Cells[r, col].GetBlock())
                         {
                             var block = m_Cells[r, col].GetBlock();
 
@@ -153,7 +152,7 @@ public class Board : MonoBehaviour
                         }
                     }
 
-                    if (m_Cells[row, col].GetBlock() == null)
+                    if (!m_Cells[row, col].GetBlock())
                     {
                         var newBlock = _blockCreateManager.CreateRandomBlock(col, m_Cells);
                         m_Cells[row, col].SetBlock(newBlock);

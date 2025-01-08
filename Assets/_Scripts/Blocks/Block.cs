@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 namespace Blocks
@@ -8,14 +7,15 @@ namespace Blocks
         [SerializeField] private BlockColor _color;
         [SerializeField] private BlockCollision _collision;
         [SerializeField] private BlockVisual _visual;
-        [SerializeField] private BlockMatcher _matcher;
 
         private Cell m_Cell;
+
 
         private void Start()
         {
             name = _color.ToString();
         }
+
 
         public void SetPosition(int row, int column)
         {
@@ -55,11 +55,6 @@ namespace Blocks
         public BlockVisual GetVisual()
         {
             return _visual;
-        }
-
-        public BlockMatcher GetMatcher()
-        {
-            return _matcher;
         }
     }
 }

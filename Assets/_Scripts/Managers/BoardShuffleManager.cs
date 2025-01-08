@@ -82,17 +82,17 @@ namespace Managers
         {
             var blocks = new List<Block>();
             for (var row = 0; row < rows; row++)
-        {
-            for (var col = 0; col < columns; col++)
             {
-                var block = cellArray[row, col].GetBlock();
-                if (block != null)
+                for (var col = 0; col < columns; col++)
                 {
-                    blocks.Add(block);
-                    cellArray[row, col].ClearBlock();
+                    var block = cellArray[row, col].GetBlock();
+                    if (block != null)
+                    {
+                        blocks.Add(block);
+                        cellArray[row, col].ClearBlock();
+                    }
                 }
             }
-        }
 
             var random = new System.Random();
             blocks = blocks.OrderBy(_ => random.Next()).ToList();
