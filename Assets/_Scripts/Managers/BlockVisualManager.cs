@@ -9,13 +9,13 @@ namespace Managers
         private void Awake()
         {
             Board.OnFillEmptyCellsEnded += HandleOnFillEmptyCellsEnded;
-            Board.OnShuffleBoardEnded += HandleShuffleBoardEnded;
+            BoardShuffleManager.OnShuffleBoardEnded += HandleShuffleBoardEnded;
         }
 
         private void OnDestroy()
         {
             Board.OnFillEmptyCellsEnded -= HandleOnFillEmptyCellsEnded;
-            Board.OnShuffleBoardEnded -= HandleShuffleBoardEnded;
+            BoardShuffleManager.OnShuffleBoardEnded -= HandleShuffleBoardEnded;
         }
 
 

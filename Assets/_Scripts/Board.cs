@@ -5,6 +5,7 @@ using Blocks;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using DG.Tweening;
+using Helpers;
 using Managers;
 
 public class Board : MonoBehaviour
@@ -16,7 +17,8 @@ public class Board : MonoBehaviour
 
     public static event Action<int, int> OnInitializeBoard;
     public static event Action<int, int, Cell[,]> OnFillEmptyCellsEnded;
-    public static event Action<int, int, Cell[,]> OnShuffleBoardEnded;
+    public static event Action<int, int, Cell[,]> OnBoardCreated;
+    public static event Action<int, int, Cell[,]> OnClearRegionEnded;
 
     private Cell[,] m_Cells;
     private bool m_CanInteract;
@@ -33,7 +35,7 @@ public class Board : MonoBehaviour
         InitializeBoard();
         _ = FillEmptyCellsAsync();
 
-        TryShuffleBoard();
+        OnBoardCreated?.Invoke(_rows, _columns, m_Cells);
     }
 
     private void OnDestroy()
@@ -57,7 +59,7 @@ public class Board : MonoBehaviour
                 m_CanInteract = false;
                 await ClearRegionAsync(block.GetCell().GetRow(), block.GetCell().GetColumn());
 
-                TryShuffleBoard();
+                OnClearRegionEnded?.Invoke(_rows, _columns, m_Cells);
                 m_CanInteract = true;
             }
         }
@@ -67,23 +69,6 @@ public class Board : MonoBehaviour
         }
     }
 
-    public List<Cell> FloodFill(int startRow, int startCol, Func<Cell, bool> matchCriteria)
-    {
-        return FloodFillHelper.Execute(m_Cells, _rows, _columns, startRow, startCol, matchCriteria);
-    }
-
-    public async UniTask ClearRegionAsync(int startRow, int startCol)
-    {
-        Func<Cell, bool> matchCriteria = cell =>
-            cell.GetBlock()?.GetColor() == m_Cells[startRow, startCol].GetBlock()?.GetColor();
-
-        var matchedCells = FloodFill(startRow, startCol, matchCriteria);
-
-        if (matchedCells.Count >= 2)
-        {
-            await ClearMatchedCellsAsync(matchedCells);
-        }
-    }
 
     private void InitializeBoard()
     {
@@ -100,6 +85,19 @@ public class Board : MonoBehaviour
         }
 
         OnInitializeBoard?.Invoke(_rows, _columns);
+    }
+
+    private async UniTask ClearRegionAsync(int startRow, int startCol)
+    {
+        Func<Cell, bool> matchCriteria = cell =>
+            cell.GetBlock()?.GetColor() == m_Cells[startRow, startCol].GetBlock()?.GetColor();
+
+        var matchedCells = FloodFill(startRow, startCol, matchCriteria);
+
+        if (matchedCells.Count >= 2)
+        {
+            await ClearMatchedCellsAsync(matchedCells);
+        }
     }
 
     private async UniTask ClearMatchedCellsAsync(List<Cell> matchedCells)
@@ -121,7 +119,6 @@ public class Board : MonoBehaviour
         await UniTask.WaitForSeconds(scaleTime);
 
         _ = FillEmptyCellsAsync();
-        TryShuffleBoard();
     }
 
     private async UniTask FillEmptyCellsAsync()
@@ -166,86 +163,9 @@ public class Board : MonoBehaviour
         await UniTask.WhenAll(tasks);
     }
 
-    private bool CheckForPossibleMoves()
+
+    public List<Cell> FloodFill(int startRow, int startCol, Func<Cell, bool> matchCriteria)
     {
-        var visited = new bool[_rows][];
-        for (int index = 0; index < _rows; index++)
-        {
-            visited[index] = new bool[_columns];
-        }
-
-        for (int row = 0; row < _rows; row++)
-        {
-            for (int col = 0; col < _columns; col++)
-            {
-                if (visited[row][col] || m_Cells[row, col].GetBlock() == null)
-                    continue;
-
-                var groupCells = FloodFill(row, col, cell =>
-                    cell.GetBlock()?.GetColor() == m_Cells[row, col].GetBlock()?.GetColor());
-
-                if (groupCells.Count >= 2)
-                {
-                    return true;
-                }
-
-                foreach (var cell in groupCells)
-                {
-                    visited[cell.GetRow()][cell.GetColumn()] = true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    private bool TryShuffleBoard()
-    {
-        if (CheckForPossibleMoves()) return false;
-
-        ShuffleBoard();
-        return true;
-    }
-
-    private void ShuffleBoard()
-    {
-        // Flatten the board into a list
-        var blocks = new List<Block>();
-        for (var row = 0; row < _rows; row++)
-        {
-            for (var col = 0; col < _columns; col++)
-            {
-                var block = m_Cells[row, col].GetBlock();
-                if (block != null)
-                {
-                    blocks.Add(block);
-                    m_Cells[row, col].ClearBlock();
-                }
-            }
-        }
-
-        var random = new System.Random();
-        blocks = blocks.OrderBy(_ => random.Next()).ToList();
-
-        var index = 0;
-        for (var row = 0; row < _rows; row++)
-        {
-            for (var col = 0; col < _columns; col++)
-            {
-                if (index < blocks.Count)
-                {
-                    m_Cells[row, col].ClearBlock();
-                    m_Cells[row, col].SetBlock(blocks[index]);
-                    blocks[index].SetCell(m_Cells[row, col]);
-
-                    blocks[index].transform.DOMove(m_Cells[row, col].transform.position, 0.5f).SetEase(Ease.OutBounce);
-
-                    index++;
-                }
-            }
-        }
-
-        TryShuffleBoard();
-        OnShuffleBoardEnded?.Invoke(_rows, _columns, m_Cells);
+        return FloodFillHelper.Execute(m_Cells, _rows, _columns, startRow, startCol, matchCriteria);
     }
 }
