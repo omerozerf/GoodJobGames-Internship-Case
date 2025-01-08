@@ -22,50 +22,49 @@ public class Board : MonoBehaviour
     private bool m_CanInteract;
 
 
+    private void Awake()
+    {
+        PlayerInputManager.OnMouseClick += HandleOnMouseClick;
+    }
+
     private void Start()
     {
         m_CanInteract = true;
         CenterCamera();
         InitializeBoard();
-        FillEmptyCellsAsync();
+        _ = FillEmptyCellsAsync();
 
-        if (!CheckForPossibleMoves())
-        {
-            ShuffleBoard();
-        }
+        TryShuffleBoard();
     }
 
-    private async void Update()
+    private void OnDestroy()
+    {
+        PlayerInputManager.OnMouseClick -= HandleOnMouseClick;
+    }
+
+    private async void HandleOnMouseClick(Vector2 mousePosition)
     {
         try
         {
-            if (Input.GetMouseButtonDown(0))
+            if (!m_CanInteract) return;
+            var hit = Physics2D.Raycast(mousePosition, Vector2.zero);
+            if (!hit.collider) return;
+            
+            if (hit.collider.TryGetComponent(out BlockCollision blockCollision))
             {
-                Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                var block = blockCollision.GetBlock();
+                if (!block) return;
 
-                var hit = Physics2D.Raycast(mousePosition, Vector2.zero);
-                if (hit.collider != null)
-                {
-                    var blockCollision = hit.collider.GetComponent<BlockCollision>();
-                    var block = blockCollision?.GetBlock();
-                    if (block != null)
-                    {
-                        if (!m_CanInteract) return;
-                        m_CanInteract = false;
-                        await ClearRegionAsync(block.GetCell().GetRow(), block.GetCell().GetColumn());
+                m_CanInteract = false;
+                await ClearRegionAsync(block.GetCell().GetRow(), block.GetCell().GetColumn());
 
-                        if (!CheckForPossibleMoves())
-                        {
-                            ShuffleBoard();
-                        }
-                        m_CanInteract = true;
-                    }
-                }
+                TryShuffleBoard();
+                m_CanInteract = true;
             }
         }
         catch (Exception e)
         {
-            throw; // TODO handle exception
+            Debug.LogError(e);
         }
     }
 
@@ -157,13 +156,9 @@ public class Board : MonoBehaviour
         }
 
         await UniTask.WaitForSeconds(scaleTime);
-        FillEmptyCellsAsync();
 
-        // Check for deadlocks after the board updates
-        if (!CheckForPossibleMoves())
-        {
-            ShuffleBoard();
-        }
+        _ = FillEmptyCellsAsync();
+        TryShuffleBoard();
     }
 
     private async UniTask FillEmptyCellsAsync()
@@ -259,6 +254,13 @@ public class Board : MonoBehaviour
         return false;
     }
 
+    private bool TryShuffleBoard()
+    {
+        if (CheckForPossibleMoves()) return false;
+
+        ShuffleBoard();
+        return true;
+    }
 
     private void ShuffleBoard()
     {
@@ -298,11 +300,7 @@ public class Board : MonoBehaviour
             }
         }
 
-        if (!CheckForPossibleMoves())
-        {
-            ShuffleBoard();
-        }
-
+        TryShuffleBoard();
         OnShuffleBoardEnded?.Invoke(_rows, _columns, m_Cells);
     }
 }
