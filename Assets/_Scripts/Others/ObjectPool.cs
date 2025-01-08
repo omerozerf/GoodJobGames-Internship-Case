@@ -1,52 +1,54 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-
-public class ObjectPool<T> where T : MonoBehaviour
+namespace Others
 {
-    private readonly Queue<T> m_Objects = new Queue<T>();
-    private readonly T m_Prefab;
-    private readonly Transform m_Parent;
-
-
-    public ObjectPool(T prefab, Transform parent, int initialCount)
+    public class ObjectPool<T> where T : MonoBehaviour
     {
-        m_Prefab = prefab;
-        m_Parent = parent;
+        private readonly Queue<T> m_Objects = new Queue<T>();
+        private readonly T m_Prefab;
+        private readonly Transform m_Parent;
 
-        for (int i = 0; i < initialCount; i++)
+
+        public ObjectPool(T prefab, Transform parent, int initialCount)
         {
-            var obj = Object.Instantiate(m_Prefab, parent);
-            obj.gameObject.SetActive(false);
-            m_Objects.Enqueue(obj);
-        }
-    }
+            m_Prefab = prefab;
+            m_Parent = parent;
 
-
-    public T Get()
-    {
-        T obj;
-
-        if (m_Objects.Count > 0)
-        {
-            obj = m_Objects.Dequeue();
-        }
-        else
-        {
-            obj = Object.Instantiate(m_Prefab, m_Parent);
+            for (int i = 0; i < initialCount; i++)
+            {
+                var obj = Object.Instantiate(m_Prefab, parent);
+                obj.gameObject.SetActive(false);
+                m_Objects.Enqueue(obj);
+            }
         }
 
-        obj.gameObject.SetActive(true);
-        return obj;
-    }
 
-    public void Return(T obj, Transform parent)
-    {
-        if (!m_Objects.Contains(obj))
+        public T Get()
         {
-            obj.gameObject.SetActive(false);
-            obj.transform.SetParent(parent);
-            m_Objects.Enqueue(obj);
+            T obj;
+
+            if (m_Objects.Count > 0)
+            {
+                obj = m_Objects.Dequeue();
+            }
+            else
+            {
+                obj = Object.Instantiate(m_Prefab, m_Parent);
+            }
+
+            obj.gameObject.SetActive(true);
+            return obj;
+        }
+
+        public void Return(T obj, Transform parent)
+        {
+            if (!m_Objects.Contains(obj))
+            {
+                obj.gameObject.SetActive(false);
+                obj.transform.SetParent(parent);
+                m_Objects.Enqueue(obj);
+            }
         }
     }
 }

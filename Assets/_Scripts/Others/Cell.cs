@@ -2,63 +2,66 @@ using System;
 using Blocks;
 using UnityEngine;
 
-public class Cell : MonoBehaviour
+namespace Others
 {
-    public event Action<Block> OnBlockChanged;
-
-    private int m_Row;
-    private int m_Column;
-    private Block m_Block;
-
-    
-    private void SetRow(int row)
+    public class Cell : MonoBehaviour
     {
-        m_Row = row;
-    }
+        public event Action<Block> OnBlockChanged;
 
-    private void SetColumn(int column)
-    {
-        m_Column = column;
-    }
+        private int m_Row;
+        private int m_Column;
+        private Block m_Block;
 
 
-    public void SetBlock(Block block)
-    {
-        m_Block = block;
-
-        if (block)
+        private void SetRow(int row)
         {
-            m_Block.transform.SetParent(transform);
+            m_Row = row;
         }
 
-        OnBlockChanged?.Invoke(block);
-    }
+        private void SetColumn(int column)
+        {
+            m_Column = column;
+        }
 
-    public int GetRow()
-    {
-        return m_Row;
-    }
 
-    public int GetColumn()
-    {
-        return m_Column;
-    }
+        public void SetBlock(Block block)
+        {
+            m_Block = block;
 
-    public Block GetBlock()
-    {
-        return m_Block;
-    }
+            if (block)
+            {
+                m_Block.transform.SetParent(transform);
+            }
 
-    public void ClearBlock()
-    {
-        SetBlock(null);
-    }
+            OnBlockChanged?.Invoke(block);
+        }
 
-    public void SetPosition(int row, int column)
-    {
-        SetRow(row);
-        SetColumn(column);
+        public int GetRow()
+        {
+            return m_Row;
+        }
 
-        transform.position = new Vector3(column, row);
+        public int GetColumn()
+        {
+            return m_Column;
+        }
+
+        public Block GetBlock()
+        {
+            return m_Block;
+        }
+
+        public void ClearBlock()
+        {
+            SetBlock(null);
+        }
+
+        public void SetPosition(int row, int column)
+        {
+            SetRow(row);
+            SetColumn(column);
+
+            transform.position = new Vector3(column, row);
+        }
     }
 }

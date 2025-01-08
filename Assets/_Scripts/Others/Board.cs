@@ -2,190 +2,189 @@ using System;
 using System.Collections.Generic;
 using Blocks;
 using Cysharp.Threading.Tasks;
-using UnityEngine;
 using DG.Tweening;
 using Helpers;
 using Managers;
+using UnityEngine;
 
-public class Board : MonoBehaviour
+namespace Others
 {
-    [Header("References")]
-    [SerializeField] private Cell _cellPrefab;
-    [SerializeField] private BlockCreateManager _blockCreateManager;
-    [SerializeField] private Transform _cellsTransform;
-
-    public static event Action<int, int> OnInitializeBoard;
-    public static event Action<int, int, Cell[,]> OnFillEmptyCellsEnded;
-    public static event Action<int, int, Cell[,]> OnBoardCreated;
-    public static event Action<int, int, Cell[,]> OnClearRegionEnded;
-
-    private int m_Rows;
-    private int m_Columns;
-    private int m_ColorsInGame;
-    private Cell[,] m_Cells;
-    private bool m_CanInteract;
-
-
-    private void Awake()
+    public class Board : MonoBehaviour
     {
-        PlayerInputManager.OnMouseClick += HandleOnMouseClick;
-    }
+        [Header("References")]
+        [SerializeField] private Cell _cellPrefab;
+        [SerializeField] private BlockCreateManager _blockCreateManager;
+        [SerializeField] private Transform _cellsTransform;
 
-    private void Start()
-    {
-        SetCanInteract(true);
-        InitializeGameSettings();
-        InitializeBoard();
-        FillEmptyCellsAsync();
+        public static event Action<int, int> OnInitializeBoard;
+        public static event Action<int, int, Cell[,]> OnFillEmptyCellsEnded;
+        public static event Action<int, int, Cell[,]> OnBoardCreated;
+        public static event Action<int, int, Cell[,]> OnClearRegionEnded;
 
-        OnBoardCreated?.Invoke(m_Rows, m_Columns, m_Cells);
-    }
+        private int m_Rows;
+        private int m_Columns;
+        private int m_ColorsInGame;
+        private Cell[,] m_Cells;
+        private bool m_CanInteract;
 
-    private void OnDestroy()
-    {
-        PlayerInputManager.OnMouseClick -= HandleOnMouseClick;
-    }
-
-
-    private async void HandleOnMouseClick(Vector2 mousePosition)
-    {
-        if (!GetCanInteract()) return;
-        var hit = Physics2D.Raycast(mousePosition, Vector2.zero);
-        if (!hit.collider) return;
-
-        if (hit.collider.TryGetComponent(out BlockCollision blockCollision))
+        private void Awake()
         {
-            var block = blockCollision.GetBlock();
-            if (!block) return;
-
-            SetCanInteract(false);
-            await ClearRegionAsync(block.GetCell().GetRow(), block.GetCell().GetColumn());
-
-            OnClearRegionEnded?.Invoke(m_Rows, m_Columns, m_Cells);
-            SetCanInteract(true);
+            PlayerInputManager.OnMouseClick += HandleOnMouseClick;
         }
 
-    }
+        private void Start()
+        {
+            SetCanInteract(true);
+            InitializeGameSettings();
+            InitializeBoard();
+            FillEmptyCellsAsync();
+
+            OnBoardCreated?.Invoke(m_Rows, m_Columns, m_Cells);
+        }
+
+        private void OnDestroy()
+        {
+            PlayerInputManager.OnMouseClick -= HandleOnMouseClick;
+        }
 
 
-    private void SetCanInteract(bool canInteract)
-    {
-        m_CanInteract = canInteract;
-    }
+        private async void HandleOnMouseClick(Vector2 mousePosition)
+        {
+            if (!GetCanInteract()) return;
+            var hit = Physics2D.Raycast(mousePosition, Vector2.zero);
+            if (!hit.collider) return;
 
-    private bool GetCanInteract()
-    {
-        return m_CanInteract;
-    }
+            if (hit.collider.TryGetComponent(out BlockCollision blockCollision))
+            {
+                var block = blockCollision.GetBlock();
+                if (!block) return;
 
-    private void InitializeGameSettings()
-    {
-        m_Rows = GameManager.GetRows();
-        m_Columns = GameManager.GetColumns();
-        m_ColorsInGame = GameManager.GetColorsInGame();
-    }
+                SetCanInteract(false);
+                await ClearRegionAsync(block.GetCell().GetRow(), block.GetCell().GetColumn());
 
-    private void InitializeBoard()
-    {
-        m_Cells = new Cell[m_Rows, m_Columns];
+                OnClearRegionEnded?.Invoke(m_Rows, m_Columns, m_Cells);
+                SetCanInteract(true);
+            }
 
-        for (var row = 0; row < m_Rows; row++)
+        }
+
+
+        private void SetCanInteract(bool canInteract)
+        {
+            m_CanInteract = canInteract;
+        }
+
+        private bool GetCanInteract()
+        {
+            return m_CanInteract;
+        }
+
+        private void InitializeGameSettings()
+        {
+            m_Rows = GameManager.GetRows();
+            m_Columns = GameManager.GetColumns();
+            m_ColorsInGame = GameManager.GetColorsInGame();
+        }
+
+        private void InitializeBoard()
+        {
+            m_Cells = new Cell[m_Rows, m_Columns];
+
+            for (var row = 0; row < m_Rows; row++)
+            {
+                for (var col = 0; col < m_Columns; col++)
+                {
+                    var cell = Instantiate(_cellPrefab, _cellsTransform);
+                    cell.SetPosition(row, col);
+                    m_Cells[row, col] = cell;
+                }
+            }
+
+            OnInitializeBoard?.Invoke(m_Rows, m_Columns);
+        }
+
+        private async UniTask ClearRegionAsync(int startRow, int startCol)
+        {
+            Func<Cell, bool> matchCriteria = cell =>
+                cell.GetBlock()?.GetColor() == m_Cells[startRow, startCol].GetBlock()?.GetColor();
+
+            var matchedCells = FloodFill(startRow, startCol, matchCriteria);
+
+            if (matchedCells.Count >= 2)
+            {
+                await ClearMatchedCellsAsync(matchedCells);
+            }
+        }
+
+        private async UniTask ClearMatchedCellsAsync(List<Cell> matchedCells)
+        {
+            const float scaleTime = 0.5f;
+            foreach (var cell in matchedCells)
+            {
+                var block = cell.GetBlock();
+                if (block)
+                {
+                    block.transform.DOScale(Vector3.zero, scaleTime)
+                        .SetEase(Ease.InBack)
+                        .OnComplete(() => _blockCreateManager.ReturnBlockToPool(block));
+                }
+
+                cell.ClearBlock();
+            }
+
+            await UniTask.WaitForSeconds(scaleTime);
+
+            FillEmptyCellsAsync();
+        }
+
+        private void FillEmptyCellsAsync()
         {
             for (var col = 0; col < m_Columns; col++)
             {
-                var cell = Instantiate(_cellPrefab, _cellsTransform);
-                cell.SetPosition(row, col);
-                m_Cells[row, col] = cell;
-            }
-        }
-
-        OnInitializeBoard?.Invoke(m_Rows, m_Columns);
-    }
-
-    private async UniTask ClearRegionAsync(int startRow, int startCol)
-    {
-        Func<Cell, bool> matchCriteria = cell =>
-            cell.GetBlock()?.GetColor() == m_Cells[startRow, startCol].GetBlock()?.GetColor();
-
-        var matchedCells = FloodFill(startRow, startCol, matchCriteria);
-
-        if (matchedCells.Count >= 2)
-        {
-            await ClearMatchedCellsAsync(matchedCells);
-        }
-    }
-
-    private async UniTask ClearMatchedCellsAsync(List<Cell> matchedCells)
-    {
-        const float scaleTime = 0.5f;
-        foreach (var cell in matchedCells)
-        {
-            var block = cell.GetBlock();
-            if (block)
-            {
-                block.transform.DOScale(Vector3.zero, scaleTime)
-                    .SetEase(Ease.InBack)
-                    .OnComplete(() => _blockCreateManager.ReturnBlockToPool(block));
-            }
-
-            cell.ClearBlock();
-        }
-
-        await UniTask.WaitForSeconds(scaleTime);
-
-        FillEmptyCellsAsync();
-    }
-
-    private void FillEmptyCellsAsync()
-    {
-        var tasks = new List<UniTask>();
-        for (var col = 0; col < m_Columns; col++)
-        {
-            for (var row = 0; row < m_Rows; row++)
-            {
-                if (!m_Cells[row, col].GetBlock())
+                for (var row = 0; row < m_Rows; row++)
                 {
-                    for (var r = row + 1; r < m_Rows; r++)
-                    {
-                        if (m_Cells[r, col].GetBlock())
-                        {
-                            var block = m_Cells[r, col].GetBlock();
-
-                            m_Cells[row, col].SetBlock(block);
-                            m_Cells[r, col].ClearBlock();
-                            block.SetCell(m_Cells[row, col]);
-
-                            var task = block.transform.DOMove(m_Cells[row, col].transform.position, 0.3f).SetEase(Ease.OutBounce)
-                                .AsyncWaitForCompletion();
-                            tasks.Add(task.AsUniTask());
-                            break;
-                        }
-                    }
-
                     if (!m_Cells[row, col].GetBlock())
                     {
-                        var newBlock = _blockCreateManager.CreateRandomBlock(col, m_Cells);
-                        m_Cells[row, col].SetBlock(newBlock);
-                        newBlock.SetCell(m_Cells[row, col]);
+                        for (var r = row + 1; r < m_Rows; r++)
+                        {
+                            if (m_Cells[r, col].GetBlock())
+                            {
+                                var block = m_Cells[r, col].GetBlock();
 
-                        var task = newBlock.transform.DOMove(m_Cells[row, col].transform.position, 0.5f)
-                            .SetEase(Ease.OutBounce).AsyncWaitForCompletion();
-                        tasks.Add(task.AsUniTask());
+                                m_Cells[row, col].SetBlock(block);
+                                m_Cells[r, col].ClearBlock();
+                                block.SetCell(m_Cells[row, col]);
+
+                                block.transform.DOMove(m_Cells[row, col].transform.position, 0.3f)
+                                    .SetEase(Ease.OutBounce);
+                                break;
+                            }
+                        }
+
+                        if (!m_Cells[row, col].GetBlock())
+                        {
+                            var newBlock = _blockCreateManager.CreateRandomBlock(col, m_Cells);
+                            m_Cells[row, col].SetBlock(newBlock);
+                            newBlock.SetCell(m_Cells[row, col]);
+
+                            newBlock.transform.DOMove(m_Cells[row, col].transform.position, 0.5f)
+                                .SetEase(Ease.OutBounce);
+                        }
                     }
                 }
             }
+            OnFillEmptyCellsEnded?.Invoke(m_Rows, m_Columns, m_Cells);
         }
-        OnFillEmptyCellsEnded?.Invoke(m_Rows, m_Columns, m_Cells);
-    }
 
 
-    public List<Cell> FloodFill(int startRow, int startCol, Func<Cell, bool> matchCriteria)
-    {
-        return FloodFillHelper.Execute(m_Cells, m_Rows, m_Columns, startRow, startCol, matchCriteria);
-    }
+        public List<Cell> FloodFill(int startRow, int startCol, Func<Cell, bool> matchCriteria)
+        {
+            return FloodFillHelper.Execute(m_Cells, m_Rows, m_Columns, startRow, startCol, matchCriteria);
+        }
 
-    public int GetColorsInGame()
-    {
-        return m_ColorsInGame;
+        public int GetColorsInGame()
+        {
+            return m_ColorsInGame;
+        }
     }
 }

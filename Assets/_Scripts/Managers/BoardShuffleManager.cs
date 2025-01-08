@@ -4,6 +4,7 @@ using System.Linq;
 using Blocks;
 using DG.Tweening;
 using Helpers;
+using Others;
 using UnityEngine;
 
 namespace Managers
@@ -11,6 +12,9 @@ namespace Managers
     public class BoardShuffleManager : MonoBehaviour
     {
         public static event Action<int, int, Cell[,]> OnShuffleBoardEnded;
+
+        private List<Cell> _reusableGroupCells = new List<Cell>();
+        private bool[][] _visitedCache;
 
 
         private void Awake()
@@ -39,15 +43,12 @@ namespace Managers
 
         private bool CheckForPossibleMoves(int rows, int columns, Cell[,] cellArray)
         {
-            var visited = new bool[rows][];
-            for (int index = 0; index < rows; index++)
-            {
-                visited[index] = new bool[columns];
-            }
+            EnsureVisitedCache(rows, columns);
+            var visited = _visitedCache;
 
-            for (int row = 0; row < rows; row++)
+            for (var row = 0; row < rows; row++)
             {
-                for (int col = 0; col < columns; col++)
+                for (var col = 0; col < columns; col++)
                 {
                     if (visited[row][col] || !cellArray[row, col].GetBlock())
                         continue;
@@ -64,10 +65,31 @@ namespace Managers
                     {
                         visited[cell.GetRow()][cell.GetColumn()] = true;
                     }
+
+                    groupCells.Clear();
                 }
             }
 
             return false;
+        }
+
+        private void EnsureVisitedCache(int rows, int columns)
+        {
+            if (_visitedCache == null || _visitedCache.Length != rows || _visitedCache[0].Length != columns)
+            {
+                _visitedCache = new bool[rows][];
+                for (var i = 0; i < rows; i++)
+                {
+                    _visitedCache[i] = new bool[columns];
+                }
+            }
+            else
+            {
+                for (var i = 0; i < rows; i++)
+                {
+                    Array.Clear(_visitedCache[i], 0, columns);
+                }
+            }
         }
 
         private bool TryShuffleBoard(int rows, int columns, Cell[,] cellArray)
@@ -95,7 +117,11 @@ namespace Managers
             }
 
             var random = new System.Random();
-            blocks = blocks.OrderBy(_ => random.Next()).ToList();
+            for (int i = blocks.Count - 1; i > 0; i--)
+            {
+                int j = random.Next(i + 1);
+                (blocks[i], blocks[j]) = (blocks[j], blocks[i]);
+            }
 
             var index = 0;
             for (var row = 0; row < rows; row++)
@@ -108,6 +134,7 @@ namespace Managers
                         cellArray[row, col].SetBlock(blocks[index]);
                         blocks[index].SetCell(cellArray[row, col]);
 
+                        blocks[index].transform.DOKill();
                         blocks[index].transform.DOMove(cellArray[row, col].transform.position, 0.5f).SetEase(Ease.OutBounce);
 
                         index++;

@@ -1,3 +1,6 @@
+using System;
+using DG.Tweening;
+using Others;
 using UnityEngine;
 
 namespace Blocks
@@ -11,9 +14,14 @@ namespace Blocks
         private Cell m_Cell;
 
 
-        private void Start()
+        private void Awake()
         {
             name = _color.ToString();
+        }
+
+        private void OnDisable()
+        {
+            DOTween.KillAll();
         }
 
 
