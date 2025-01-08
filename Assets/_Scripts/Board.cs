@@ -49,28 +49,22 @@ public class Board : MonoBehaviour
 
     private async void HandleOnMouseClick(Vector2 mousePosition)
     {
-        try
+        if (!GetCanInteract()) return;
+        var hit = Physics2D.Raycast(mousePosition, Vector2.zero);
+        if (!hit.collider) return;
+
+        if (hit.collider.TryGetComponent(out BlockCollision blockCollision))
         {
-            if (!GetCanInteract()) return;
-            var hit = Physics2D.Raycast(mousePosition, Vector2.zero);
-            if (!hit.collider) return;
+            var block = blockCollision.GetBlock();
+            if (!block) return;
 
-            if (hit.collider.TryGetComponent(out BlockCollision blockCollision))
-            {
-                var block = blockCollision.GetBlock();
-                if (!block) return;
+            SetCanInteract(false);
+            await ClearRegionAsync(block.GetCell().GetRow(), block.GetCell().GetColumn());
 
-                SetCanInteract(false);
-                await ClearRegionAsync(block.GetCell().GetRow(), block.GetCell().GetColumn());
-
-                OnClearRegionEnded?.Invoke(m_Rows, m_Columns, m_Cells);
-                SetCanInteract(true);
-            }
+            OnClearRegionEnded?.Invoke(m_Rows, m_Columns, m_Cells);
+            SetCanInteract(true);
         }
-        catch (Exception e)
-        {
-            Debug.LogError(e);
-        }
+
     }
 
 

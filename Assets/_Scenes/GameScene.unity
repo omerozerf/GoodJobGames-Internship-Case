@@ -603,7 +603,7 @@ GameObject:
   - component: {fileID: 1364990955}
   - component: {fileID: 1364990954}
   m_Layer: 0
-  m_Name: Game Manager
+  m_Name: Game Manager (Game Settings)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -621,9 +621,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd5494b87ec49809d4f5cdc90b0afbd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _rows: 10
-  _columns: 12
-  _colorsInGame: 4
+  _rows: 3
+  _columns: 3
+  _colorsInGame: 5
 --- !u!4 &1364990955
 Transform:
   m_ObjectHideFlags: 0
@@ -704,7 +704,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1427459697}
   m_Layer: 0
-  m_Name: ---------------------------------------- (3)
+  m_Name: --------------------------------------- (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
