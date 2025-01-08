@@ -30,7 +30,6 @@ public class Board : MonoBehaviour
     private void Start()
     {
         m_CanInteract = true;
-        CenterCamera();
         InitializeBoard();
         _ = FillEmptyCellsAsync();
 
@@ -49,7 +48,7 @@ public class Board : MonoBehaviour
             if (!m_CanInteract) return;
             var hit = Physics2D.Raycast(mousePosition, Vector2.zero);
             if (!hit.collider) return;
-            
+
             if (hit.collider.TryGetComponent(out BlockCollision blockCollision))
             {
                 var block = blockCollision.GetBlock();
@@ -128,17 +127,6 @@ public class Board : MonoBehaviour
         OnInitializeBoard?.Invoke(_rows, _columns);
     }
 
-    public Cell GetCell(int row, int col)
-    {
-        if (row >= 0 && row < _rows && col >= 0 && col < _columns)
-        {
-            return m_Cells[row, col];
-        }
-
-        return null;
-    }
-
-
     private async UniTask ClearMatchedCellsAsync(List<Cell> matchedCells)
     {
         const float scaleTime = 0.5f;
@@ -201,24 +189,6 @@ public class Board : MonoBehaviour
         }
         OnFillEmptyCellsEnded?.Invoke(_rows, _columns, m_Cells);
         await UniTask.WhenAll(tasks);
-    }
-
-    private void CenterCamera()
-    {
-        var mainCamera = Camera.main;
-        if (mainCamera != null)
-        {
-            var centerX = (_columns - 1) * 0.5f;
-            var centerY = (_rows - 1) * 0.5f;
-
-            mainCamera.transform.position = new Vector3(centerX, centerY, mainCamera.transform.position.z);
-
-            var aspectRatio = mainCamera.aspect;
-            float boardHeight = _rows;
-            float boardWidth = _columns;
-
-            mainCamera.orthographicSize = Mathf.Max(boardHeight / 2, boardWidth / (2 * aspectRatio)) * 1.5f;
-        }
     }
 
     private bool CheckForPossibleMoves()
