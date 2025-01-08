@@ -10,11 +10,15 @@ using Managers;
 
 public class Board : MonoBehaviour
 {
+    [Header("Game Settings")]
     [SerializeField] private int _rows;
     [SerializeField] private int _columns;
     [SerializeField, Range(1, 6)] private int _colorsInGame;
+
+    [Header("References")]
     [SerializeField] private Cell _cellPrefab;
     [SerializeField] private BlockCreateManager _blockCreateManager;
+    [SerializeField] private Transform _cellsTransform;
 
     public static event Action<int, int> OnInitializeBoard;
     public static event Action<int, int, Cell[,]> OnFillEmptyCellsEnded;
@@ -80,7 +84,7 @@ public class Board : MonoBehaviour
         {
             for (var col = 0; col < _columns; col++)
             {
-                var cell = Instantiate(_cellPrefab, transform);
+                var cell = Instantiate(_cellPrefab, _cellsTransform);
                 cell.SetPosition(row, col);
                 m_Cells[row, col] = cell;
             }
