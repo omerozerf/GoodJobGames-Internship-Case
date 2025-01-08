@@ -14,11 +14,13 @@ public class Board : MonoBehaviour
     [SerializeField] private Block[] _blockPrefabArray;
 
     private Cell[,] m_Cells;
+    private Dictionary<Block, ObjectPool<Block>> m_BlockPools;
 
     private void Start()
     {
         CenterCamera();
         InitializeBoard();
+        InitializePools();
         FillEmptyCellsAsync();
 
         if (!CheckForPossibleMoves())
@@ -59,6 +61,33 @@ public class Board : MonoBehaviour
         {
             throw; // TODO handle exception
         }
+    }
+
+    private void InitializePools()
+    {
+        m_BlockPools = new Dictionary<Block, ObjectPool<Block>>();
+
+        // Dinamik olarak poolSize hesapla
+        int poolSize = (int)((_rows * _columns) * 1.2f);
+
+        foreach (var blockPrefab in _blockPrefabArray)
+        {
+            m_BlockPools[blockPrefab] = new ObjectPool<Block>(
+                blockPrefab,
+                transform,
+                poolSize
+            );
+        }
+    }
+
+    private Block GetBlockFromPool(Block prefab)
+    {
+        return m_BlockPools[prefab].Get();
+    }
+
+    private void ReturnBlockToPool(Block block)
+    {
+        m_BlockPools[block].Return(block);
     }
 
     public List<Cell> FloodFill(int startRow, int startCol, Func<Cell, bool> matchCriteria)
@@ -199,7 +228,7 @@ public class Board : MonoBehaviour
             if (block != null)
             {
                 var task = block.transform.DOScale(Vector3.zero, 0.5f).SetEase(Ease.InBack)
-                    .OnComplete(() => Destroy(block.gameObject)).ToUniTask();
+                    .OnComplete(() => ReturnBlockToPool(block)).ToUniTask();
                 tasks.Add(task);
             }
 
@@ -281,21 +310,16 @@ public class Board : MonoBehaviour
 
     private Block CreateRandomBlock(int column)
     {
-        var mainCamera = Camera.main;
+        var randomPrefab = _blockPrefabArray[UnityEngine.Random.Range(0, _blockPrefabArray.Length)];
+        var block = GetBlockFromPool(randomPrefab);
 
-        var cameraTopY = mainCamera.transform.position.y + mainCamera.orthographicSize;
-
-        var spawnPosition = new Vector3(
+        block.transform.position = new Vector3(
             m_Cells[0, column].transform.position.x,
-            cameraTopY + 2.0f,
+            Camera.main.transform.position.y + Camera.main.orthographicSize + 2.0f,
             0
         );
 
-        var newBlock = Instantiate(_blockPrefabArray[UnityEngine.Random.Range(0, _blockPrefabArray.Length)]);
-
-        newBlock.transform.position = spawnPosition;
-
-        return newBlock;
+        return block;
     }
 
     private bool CheckForPossibleMoves()
