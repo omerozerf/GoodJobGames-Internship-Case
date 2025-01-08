@@ -155,9 +155,9 @@ public class Board : MonoBehaviour
                             m_Cells[r, col].ClearBlock();
                             block.SetCell(m_Cells[row, col]);
 
-                            var task = block.transform.DOMove(m_Cells[row, col].transform.position, 0.3f).SetEase(Ease.OutBounce).
-                                ToUniTask();
-                            tasks.Add(task);
+                            var task = block.transform.DOMove(m_Cells[row, col].transform.position, 0.3f).SetEase(Ease.OutBounce)
+                                .AsyncWaitForCompletion();
+                            tasks.Add(task.AsUniTask());
                             break;
                         }
                     }
@@ -168,8 +168,9 @@ public class Board : MonoBehaviour
                         m_Cells[row, col].SetBlock(newBlock);
                         newBlock.SetCell(m_Cells[row, col]);
 
-                        var task =newBlock.transform.DOMove(m_Cells[row, col].transform.position, 0.5f).SetEase(Ease.OutBounce).ToUniTask();
-                        tasks.Add(task);
+                        var task = newBlock.transform.DOMove(m_Cells[row, col].transform.position, 0.5f)
+                            .SetEase(Ease.OutBounce).AsyncWaitForCompletion();
+                        tasks.Add(task.AsUniTask());
                     }
                 }
             }
