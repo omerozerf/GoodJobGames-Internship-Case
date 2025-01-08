@@ -69,32 +69,7 @@ public class Board : MonoBehaviour
 
     public List<Cell> FloodFill(int startRow, int startCol, Func<Cell, bool> matchCriteria)
     {
-        var matchedCells = new List<Cell>();
-        var visited = new bool[_rows][];
-        for (var index = 0; index < _rows; index++)
-        {
-            visited[index] = new bool[_columns];
-        }
-
-        void Fill(int row, int col)
-        {
-            if (row < 0 || row >= _rows || col < 0 || col >= _columns)
-                return;
-
-            if (visited[row][col] || !matchCriteria(m_Cells[row, col]))
-                return;
-
-            visited[row][col] = true;
-            matchedCells.Add(m_Cells[row, col]);
-
-            Fill(row - 1, col); // Up
-            Fill(row + 1, col); // Down
-            Fill(row, col - 1); // Left
-            Fill(row, col + 1); // Right
-        }
-
-        Fill(startRow, startCol);
-        return matchedCells;
+        return FloodFillHelper.Execute(m_Cells, _rows, _columns, startRow, startCol, matchCriteria);
     }
 
     public async UniTask ClearRegionAsync(int startRow, int startCol)
