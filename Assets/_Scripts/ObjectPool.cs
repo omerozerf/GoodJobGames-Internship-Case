@@ -34,9 +34,10 @@ public class ObjectPool<T> where T : MonoBehaviour
         return newObj;
     }
 
-    public void Return(T obj)
+    public void Return(T obj, Transform parent)
     {
         obj.gameObject.SetActive(false);
+        obj.transform.SetParent(parent);
         m_Objects.Enqueue(obj);
     }
 }

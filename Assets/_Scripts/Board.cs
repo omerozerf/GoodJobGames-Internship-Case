@@ -11,16 +11,19 @@ public class Board : MonoBehaviour
     [SerializeField] private int _rows;
     [SerializeField] private int _columns;
     [SerializeField] private Cell _cellPrefab;
-    [SerializeField] private Block[] _blockPrefabArray;
+    [SerializeField] private BlockCreateManager _blockCreateManager;
+
+    public static event Action<int, int> OnInitializeBoard;
 
     private Cell[,] m_Cells;
-    private Dictionary<Block, ObjectPool<Block>> m_BlockPools;
+    private bool m_CanInteract;
+
 
     private void Start()
     {
+        m_CanInteract = true;
         CenterCamera();
         InitializeBoard();
-        InitializePools();
         FillEmptyCellsAsync();
 
         if (!CheckForPossibleMoves())
@@ -45,6 +48,8 @@ public class Board : MonoBehaviour
                     var block = blockCollision?.GetBlock();
                     if (block != null)
                     {
+                        if (!m_CanInteract) return;
+                        m_CanInteract = false;
                         await ClearRegionAsync(block.GetCell().GetRow(), block.GetCell().GetColumn());
 
                         // After clearing blocks and updating the board, check for a deadlock
@@ -61,33 +66,6 @@ public class Board : MonoBehaviour
         {
             throw; // TODO handle exception
         }
-    }
-
-    private void InitializePools()
-    {
-        m_BlockPools = new Dictionary<Block, ObjectPool<Block>>();
-
-        // Dinamik olarak poolSize hesapla
-        int poolSize = (int)((_rows * _columns) * 1.2f);
-
-        foreach (var blockPrefab in _blockPrefabArray)
-        {
-            m_BlockPools[blockPrefab] = new ObjectPool<Block>(
-                blockPrefab,
-                transform,
-                poolSize
-            );
-        }
-    }
-
-    private Block GetBlockFromPool(Block prefab)
-    {
-        return m_BlockPools[prefab].Get();
-    }
-
-    private void ReturnBlockToPool(Block block)
-    {
-        m_BlockPools[block].Return(block);
     }
 
     public List<Cell> FloodFill(int startRow, int startCol, Func<Cell, bool> matchCriteria)
@@ -204,6 +182,8 @@ public class Board : MonoBehaviour
                 m_Cells[row, col] = cell;
             }
         }
+
+        OnInitializeBoard?.Invoke(_rows, _columns);
     }
 
     public Cell GetCell(int row, int col)
@@ -217,25 +197,25 @@ public class Board : MonoBehaviour
     }
 
 
-
-    public async UniTask ClearMatchedCellsAsync(List<Cell> matchedCells)
+    private async UniTask ClearMatchedCellsAsync(List<Cell> matchedCells)
     {
-        var tasks = new List<UniTask>();
-
+        const float scaleTime = 0.5f;
         foreach (var cell in matchedCells)
         {
             var block = cell.GetBlock();
             if (block != null)
             {
-                var task = block.transform.DOScale(Vector3.zero, 0.5f).SetEase(Ease.InBack)
-                    .OnComplete(() => ReturnBlockToPool(block)).ToUniTask();
-                tasks.Add(task);
+                block.transform.DOScale(Vector3.zero, scaleTime)
+                    .SetEase(Ease.InBack)
+                    .OnComplete(() => _blockCreateManager.ReturnBlockToPool(block));
             }
 
             cell.ClearBlock();
         }
 
-        await UniTask.WhenAll(tasks);
+        await UniTask.WaitForSeconds(scaleTime);
+
+        m_CanInteract = true;
         await FillEmptyCellsAsync();
 
         UpdateBlockSortingOrder();
@@ -243,7 +223,6 @@ public class Board : MonoBehaviour
         // Check for deadlocks after the board updates
         if (!CheckForPossibleMoves())
         {
-            Debug.Log("Deadlock detected! Shuffling the board.");
             ShuffleBoard();
         }
     }
@@ -276,7 +255,7 @@ public class Board : MonoBehaviour
 
                     if (m_Cells[row, col].GetBlock() == null)
                     {
-                        var newBlock = CreateRandomBlock(col);
+                        var newBlock = _blockCreateManager.CreateRandomBlock(col, m_Cells);
                         m_Cells[row, col].SetBlock(newBlock);
                         newBlock.SetCell(m_Cells[row, col]);
 
@@ -306,20 +285,6 @@ public class Board : MonoBehaviour
 
             mainCamera.orthographicSize = Mathf.Max(boardHeight / 2, boardWidth / (2 * aspectRatio)) * 1.5f;
         }
-    }
-
-    private Block CreateRandomBlock(int column)
-    {
-        var randomPrefab = _blockPrefabArray[UnityEngine.Random.Range(0, _blockPrefabArray.Length)];
-        var block = GetBlockFromPool(randomPrefab);
-
-        block.transform.position = new Vector3(
-            m_Cells[0, column].transform.position.x,
-            Camera.main.transform.position.y + Camera.main.orthographicSize + 2.0f,
-            0
-        );
-
-        return block;
     }
 
     private bool CheckForPossibleMoves()
