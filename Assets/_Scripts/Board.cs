@@ -14,6 +14,8 @@ public class Board : MonoBehaviour
     [SerializeField] private BlockCreateManager _blockCreateManager;
 
     public static event Action<int, int> OnInitializeBoard;
+    public static event Action<int, int, Cell[,]> OnFillEmptyCellsEnded;
+    public static event Action<int, int, Cell[,]> OnShuffleBoardEnded;
 
     private Cell[,] m_Cells;
     private bool m_CanInteract;
@@ -28,7 +30,6 @@ public class Board : MonoBehaviour
 
         if (!CheckForPossibleMoves())
         {
-            Debug.Log("Deadlock detected on board initialization! Shuffling the board.");
             ShuffleBoard();
         }
     }
@@ -52,10 +53,8 @@ public class Board : MonoBehaviour
                         m_CanInteract = false;
                         await ClearRegionAsync(block.GetCell().GetRow(), block.GetCell().GetColumn());
 
-                        // After clearing blocks and updating the board, check for a deadlock
                         if (!CheckForPossibleMoves())
                         {
-                            Debug.Log("Deadlock detected! Shuffling the board.");
                             ShuffleBoard();
                         }
                     }
@@ -98,23 +97,7 @@ public class Board : MonoBehaviour
         return matchedCells;
     }
 
-    private void UpdateBlockSortingOrder()
-    {
-        for (var row = 0; row < _rows; row++)
-        {
-            for (var col = 0; col < _columns; col++)
-            {
-                var block = m_Cells[row, col].GetBlock();
-                if (block != null)
-                {
-                    var sortingOrder = row;
-                    block.GetVisual().SetOrderInLayer(sortingOrder);
-                }
-            }
-        }
 
-        UpdateAllBlockSpritesBasedOnGroupSize();
-    }
 
     private void UpdateAllBlockSpritesBasedOnGroupSize()
     {
@@ -214,11 +197,8 @@ public class Board : MonoBehaviour
         }
 
         await UniTask.WaitForSeconds(scaleTime);
-
+        FillEmptyCellsAsync();
         m_CanInteract = true;
-        await FillEmptyCellsAsync();
-
-        UpdateBlockSortingOrder();
 
         // Check for deadlocks after the board updates
         if (!CheckForPossibleMoves())
@@ -265,7 +245,7 @@ public class Board : MonoBehaviour
                 }
             }
         }
-        UpdateBlockSortingOrder();
+        OnFillEmptyCellsEnded?.Invoke(_rows, _columns, m_Cells);
         await UniTask.WhenAll(tasks);
     }
 
@@ -364,6 +344,6 @@ public class Board : MonoBehaviour
             ShuffleBoard();
         }
 
-        UpdateBlockSortingOrder();
+        OnShuffleBoardEnded?.Invoke(_rows, _columns, m_Cells);
     }
 }
