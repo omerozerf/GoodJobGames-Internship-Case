@@ -9,11 +9,6 @@ using Managers;
 
 public class Board : MonoBehaviour
 {
-    [Header("Game Settings")]
-    [SerializeField] private int _rows;
-    [SerializeField] private int _columns;
-    [SerializeField, Range(1, 6)] private int _colorsInGame;
-
     [Header("References")]
     [SerializeField] private Cell _cellPrefab;
     [SerializeField] private BlockCreateManager _blockCreateManager;
@@ -24,6 +19,9 @@ public class Board : MonoBehaviour
     public static event Action<int, int, Cell[,]> OnBoardCreated;
     public static event Action<int, int, Cell[,]> OnClearRegionEnded;
 
+    private int m_Rows;
+    private int m_Columns;
+    private int m_ColorsInGame;
     private Cell[,] m_Cells;
     private bool m_CanInteract;
 
@@ -35,11 +33,12 @@ public class Board : MonoBehaviour
 
     private void Start()
     {
-        m_CanInteract = true;
+        SetCanInteract(true);
+        InitializeGameSettings();
         InitializeBoard();
         _ = FillEmptyCellsAsync();
 
-        OnBoardCreated?.Invoke(_rows, _columns, m_Cells);
+        OnBoardCreated?.Invoke(m_Rows, m_Columns, m_Cells);
     }
 
     private void OnDestroy()
@@ -52,7 +51,7 @@ public class Board : MonoBehaviour
     {
         try
         {
-            if (!m_CanInteract) return;
+            if (!GetCanInteract()) return;
             var hit = Physics2D.Raycast(mousePosition, Vector2.zero);
             if (!hit.collider) return;
 
@@ -61,11 +60,11 @@ public class Board : MonoBehaviour
                 var block = blockCollision.GetBlock();
                 if (!block) return;
 
-                m_CanInteract = false;
+                SetCanInteract(false);
                 await ClearRegionAsync(block.GetCell().GetRow(), block.GetCell().GetColumn());
 
-                OnClearRegionEnded?.Invoke(_rows, _columns, m_Cells);
-                m_CanInteract = true;
+                OnClearRegionEnded?.Invoke(m_Rows, m_Columns, m_Cells);
+                SetCanInteract(true);
             }
         }
         catch (Exception e)
@@ -75,13 +74,30 @@ public class Board : MonoBehaviour
     }
 
 
+    private void SetCanInteract(bool canInteract)
+    {
+        m_CanInteract = canInteract;
+    }
+
+    private bool GetCanInteract()
+    {
+        return m_CanInteract;
+    }
+
+    private void InitializeGameSettings()
+    {
+        m_Rows = GameManager.GetRows();
+        m_Columns = GameManager.GetColumns();
+        m_ColorsInGame = GameManager.GetColorsInGame();
+    }
+
     private void InitializeBoard()
     {
-        m_Cells = new Cell[_rows, _columns];
+        m_Cells = new Cell[m_Rows, m_Columns];
 
-        for (var row = 0; row < _rows; row++)
+        for (var row = 0; row < m_Rows; row++)
         {
-            for (var col = 0; col < _columns; col++)
+            for (var col = 0; col < m_Columns; col++)
             {
                 var cell = Instantiate(_cellPrefab, _cellsTransform);
                 cell.SetPosition(row, col);
@@ -89,7 +105,7 @@ public class Board : MonoBehaviour
             }
         }
 
-        OnInitializeBoard?.Invoke(_rows, _columns);
+        OnInitializeBoard?.Invoke(m_Rows, m_Columns);
     }
 
     private async UniTask ClearRegionAsync(int startRow, int startCol)
@@ -129,13 +145,13 @@ public class Board : MonoBehaviour
     private async UniTask FillEmptyCellsAsync()
     {
         var tasks = new List<UniTask>();
-        for (var col = 0; col < _columns; col++)
+        for (var col = 0; col < m_Columns; col++)
         {
-            for (var row = 0; row < _rows; row++)
+            for (var row = 0; row < m_Rows; row++)
             {
                 if (!m_Cells[row, col].GetBlock())
                 {
-                    for (var r = row + 1; r < _rows; r++)
+                    for (var r = row + 1; r < m_Rows; r++)
                     {
                         if (m_Cells[r, col].GetBlock())
                         {
@@ -164,18 +180,18 @@ public class Board : MonoBehaviour
                 }
             }
         }
-        OnFillEmptyCellsEnded?.Invoke(_rows, _columns, m_Cells);
+        OnFillEmptyCellsEnded?.Invoke(m_Rows, m_Columns, m_Cells);
         await UniTask.WhenAll(tasks);
     }
 
 
     public List<Cell> FloodFill(int startRow, int startCol, Func<Cell, bool> matchCriteria)
     {
-        return FloodFillHelper.Execute(m_Cells, _rows, _columns, startRow, startCol, matchCriteria);
+        return FloodFillHelper.Execute(m_Cells, m_Rows, m_Columns, startRow, startCol, matchCriteria);
     }
 
     public int GetColorsInGame()
     {
-        return _colorsInGame;
+        return m_ColorsInGame;
     }
 }
