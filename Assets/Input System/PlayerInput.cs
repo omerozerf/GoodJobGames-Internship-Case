@@ -48,6 +48,17 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
                     ""action"": ""SelectBlock"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""c49ad6d3-06d6-4412-b234-f2b93fbe17b0"",
+                    ""path"": ""<Touchscreen>/Press"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SelectBlock"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
