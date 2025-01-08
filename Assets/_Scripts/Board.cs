@@ -12,6 +12,7 @@ public class Board : MonoBehaviour
 {
     [SerializeField] private int _rows;
     [SerializeField] private int _columns;
+    [SerializeField, Range(1, 6)] private int _colorsInGame;
     [SerializeField] private Cell _cellPrefab;
     [SerializeField] private BlockCreateManager _blockCreateManager;
 
@@ -42,6 +43,7 @@ public class Board : MonoBehaviour
     {
         PlayerInputManager.OnMouseClick -= HandleOnMouseClick;
     }
+
 
     private async void HandleOnMouseClick(Vector2 mousePosition)
     {
@@ -167,5 +169,10 @@ public class Board : MonoBehaviour
     public List<Cell> FloodFill(int startRow, int startCol, Func<Cell, bool> matchCriteria)
     {
         return FloodFillHelper.Execute(m_Cells, _rows, _columns, startRow, startCol, matchCriteria);
+    }
+
+    public int GetColorsInGame()
+    {
+        return _colorsInGame;
     }
 }

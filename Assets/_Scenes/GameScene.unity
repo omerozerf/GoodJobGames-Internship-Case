@@ -542,8 +542,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59e365d023f349d5a362b8d81a6fe959, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _rows: 3
-  _columns: 3
+  _rows: 10
+  _columns: 12
+  _colorsInGame: 6
   _cellPrefab: {fileID: 4632056171363456540, guid: 12b10c92e81994db7965ed8a51f88dd2, type: 3}
   _blockCreateManager: {fileID: 1402333867}
 --- !u!4 &1153479131
@@ -590,6 +591,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 12d4f33670694e3fb1b15cfee79294da, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _board: {fileID: 1153479130}
   _blockPrefabArray:
   - {fileID: 502827331108931231, guid: 1695630bf581e4d7ab33e64708f733e9, type: 3}
   - {fileID: 502827331108931231, guid: 814dab3bf02f6453cbe117a458519468, type: 3}
