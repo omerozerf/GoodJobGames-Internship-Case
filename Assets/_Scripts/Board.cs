@@ -36,7 +36,7 @@ public class Board : MonoBehaviour
         SetCanInteract(true);
         InitializeGameSettings();
         InitializeBoard();
-        _ = FillEmptyCellsAsync();
+        FillEmptyCellsAsync();
 
         OnBoardCreated?.Invoke(m_Rows, m_Columns, m_Cells);
     }
@@ -133,10 +133,10 @@ public class Board : MonoBehaviour
 
         await UniTask.WaitForSeconds(scaleTime);
 
-        _ = FillEmptyCellsAsync();
+        FillEmptyCellsAsync();
     }
 
-    private async UniTask FillEmptyCellsAsync()
+    private void FillEmptyCellsAsync()
     {
         var tasks = new List<UniTask>();
         for (var col = 0; col < m_Columns; col++)
@@ -175,7 +175,6 @@ public class Board : MonoBehaviour
             }
         }
         OnFillEmptyCellsEnded?.Invoke(m_Rows, m_Columns, m_Cells);
-        await UniTask.WhenAll(tasks);
     }
 
 
