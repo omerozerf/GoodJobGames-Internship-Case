@@ -573,6 +573,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59e365d023f349d5a362b8d81a6fe959, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _blastBlockTime: 0.5
+  _moveBlockDownTime: 0.3
+  _newBlockMoveTime: 0.5
   _cellPrefab: {fileID: 4632056171363456540, guid: 12b10c92e81994db7965ed8a51f88dd2, type: 3}
   _blockCreateManager: {fileID: 1402333867}
   _cellsTransform: {fileID: 1100327061}

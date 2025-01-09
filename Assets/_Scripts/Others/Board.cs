@@ -11,6 +11,11 @@ namespace Others
 {
     public class Board : MonoBehaviour
     {
+        [Header("Block Animation Times")]
+        [SerializeField] private float _blastBlockTime;
+        [SerializeField] private float _moveBlockDownTime;
+        [SerializeField] private float _newBlockMoveTime;
+
         [Header("References")]
         [SerializeField] private Cell _cellPrefab;
         [SerializeField] private BlockCreateManager _blockCreateManager;
@@ -118,13 +123,12 @@ namespace Others
 
         private async UniTask ClearMatchedCellsAsync(List<Cell> matchedCells)
         {
-            const float scaleTime = 0.5f;
             foreach (var cell in matchedCells)
             {
                 var block = cell.GetBlock();
                 if (block)
                 {
-                    block.GetAnimation().DOScale(Vector3.zero, scaleTime, Ease.InBack, () =>
+                    block.GetAnimation().DOScale(Vector3.zero, _blastBlockTime, Ease.InBack, () =>
                     {
                         _blockCreateManager.ReturnBlockToPool(block);
                     }).Forget();
@@ -133,8 +137,7 @@ namespace Others
                 cell.ClearBlock();
             }
 
-            await UniTask.WaitForSeconds(scaleTime);
-
+            await UniTask.WaitForSeconds(_blastBlockTime);
             FillEmptyCells();
         }
 
@@ -167,7 +170,7 @@ namespace Others
                 block.SetCell(m_Cells[row, col]);
 
                 block.GetAnimation()
-                    .DOMove(m_Cells[row, col].transform.position, 0.3f, Ease.OutBounce)
+                    .DOMove(m_Cells[row, col].transform.position, _moveBlockDownTime, Ease.OutBounce)
                     .Forget();
 
                 break;
