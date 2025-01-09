@@ -8,25 +8,36 @@ namespace Blocks
     {
         [SerializeField] private Block _block;
 
-
+        
         public async UniTask DOMove(Vector3 targetPosition, float duration, Ease ease, TweenCallback onComplete = null)
         {
-            transform.DOKill();
+            _block.transform.DOKill();
 
-            await _block.transform.DOMove(targetPosition, duration)
-                .SetEase(ease)
-                .OnComplete(onComplete)
-                .AsyncWaitForCompletion();
+            var tween = _block.transform.DOMove(targetPosition, duration)
+                .SetEase(ease);
+
+            if (onComplete != null)
+                tween.OnComplete(() => HandleTweenComplete(onComplete));
+
+            await UniTask.WaitUntil(() => !tween.IsActive());
         }
 
         public async UniTask DOScale(Vector3 targetScale, float duration, Ease ease, TweenCallback onComplete = null)
         {
-            transform.DOKill();
+            _block.transform.DOKill();
 
-            await _block.transform.DOScale(targetScale, duration)
-                .SetEase(ease)
-                .OnComplete(onComplete)
-                .AsyncWaitForCompletion();
+            var tween = _block.transform.DOScale(targetScale, duration)
+                .SetEase(ease);
+
+            if (onComplete != null)
+                tween.OnComplete(() => HandleTweenComplete(onComplete));
+
+            await UniTask.WaitUntil(() => !tween.IsActive());
+        }
+
+        private void HandleTweenComplete(TweenCallback onComplete)
+        {
+            onComplete?.Invoke();
         }
     }
 }
