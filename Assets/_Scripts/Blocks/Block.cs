@@ -10,6 +10,7 @@ namespace Blocks
         [SerializeField] private BlockColor _color;
         [SerializeField] private BlockCollision _collision;
         [SerializeField] private BlockVisual _visual;
+        [SerializeField] private BlockAnimation _animation;
 
         private Cell m_Cell;
 
@@ -63,6 +64,11 @@ namespace Blocks
         public BlockVisual GetVisual()
         {
             return _visual;
+        }
+
+        public BlockAnimation GetAnimation()
+        {
+            return _animation;
         }
     }
 }

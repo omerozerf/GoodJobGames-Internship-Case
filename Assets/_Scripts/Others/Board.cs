@@ -124,9 +124,10 @@ namespace Others
                 var block = cell.GetBlock();
                 if (block)
                 {
-                    block.transform.DOScale(Vector3.zero, scaleTime)
-                        .SetEase(Ease.InBack)
-                        .OnComplete(() => _blockCreateManager.ReturnBlockToPool(block));
+                    block.GetAnimation().DOScale(Vector3.zero, scaleTime, Ease.InBack, () =>
+                    {
+                        _blockCreateManager.ReturnBlockToPool(block);
+                    }).Forget();
                 }
 
                 cell.ClearBlock();
@@ -137,45 +138,54 @@ namespace Others
             FillEmptyCells();
         }
 
+
         private void FillEmptyCells()
         {
             for (var col = 0; col < m_Columns; col++)
             {
                 for (var row = 0; row < m_Rows; row++)
                 {
-                    if (!m_Cells[row, col].GetBlock())
-                    {
-                        for (var r = row + 1; r < m_Rows; r++)
-                        {
-                            if (m_Cells[r, col].GetBlock())
-                            {
-                                var block = m_Cells[r, col].GetBlock();
+                    if (m_Cells[row, col].GetBlock()) continue;
 
-                                m_Cells[row, col].SetBlock(block);
-                                m_Cells[r, col].ClearBlock();
-                                block.SetCell(m_Cells[row, col]);
-
-                                block.transform.DOMove(m_Cells[row, col].transform.position, 0.3f)
-                                    .SetEase(Ease.OutBounce);
-                                break;
-                            }
-                        }
-
-                        if (!m_Cells[row, col].GetBlock())
-                        {
-                            var newBlock = _blockCreateManager.CreateRandomBlock(col, m_Cells);
-                            m_Cells[row, col].SetBlock(newBlock);
-                            newBlock.SetCell(m_Cells[row, col]);
-
-                            newBlock.transform.DOMove(m_Cells[row, col].transform.position, 0.5f)
-                                .SetEase(Ease.OutBounce);
-                        }
-                    }
+                    MoveBlocksDown(row, col);
+                    CreateNewBlockIfEmpty(row, col);
                 }
             }
             OnFillEmptyCellsEnded?.Invoke(m_Rows, m_Columns, m_Cells);
         }
 
+        private void MoveBlocksDown(int row, int col)
+        {
+            for (var r = row + 1; r < m_Rows; r++)
+            {
+                if (!m_Cells[r, col].GetBlock()) continue;
+
+                var block = m_Cells[r, col].GetBlock();
+
+                m_Cells[row, col].SetBlock(block);
+                m_Cells[r, col].ClearBlock();
+                block.SetCell(m_Cells[row, col]);
+
+                block.GetAnimation()
+                    .DOMove(m_Cells[row, col].transform.position, 0.3f, Ease.OutBounce)
+                    .Forget();
+
+                break;
+            }
+        }
+
+        private void CreateNewBlockIfEmpty(int row, int col)
+        {
+            if (m_Cells[row, col].GetBlock()) return;
+
+            var newBlock = _blockCreateManager.CreateRandomBlock(col, m_Cells);
+            m_Cells[row, col].SetBlock(newBlock);
+            newBlock.SetCell(m_Cells[row, col]);
+
+            newBlock.GetAnimation()
+                .DOMove(m_Cells[row, col].transform.position, 0.5f, Ease.OutBounce)
+                .Forget();
+        }
 
         public List<Cell> FloodFill(int startRow, int startCol, Func<Cell, bool> matchCriteria)
         {

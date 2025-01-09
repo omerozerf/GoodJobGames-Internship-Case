@@ -135,6 +135,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6764247018848863178}
   - component: {fileID: 3036083899303520212}
+  - component: {fileID: 2227832752359151329}
   m_Layer: 0
   m_Name: Block Prefab
   m_TagString: Untagged
@@ -173,6 +174,20 @@ MonoBehaviour:
   _color: 0
   _collision: {fileID: 3445509782801928179}
   _visual: {fileID: 1126976803649899564}
+  _animation: {fileID: 2227832752359151329}
+--- !u!114 &2227832752359151329
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7088211470395883046}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94b676e7f6ca438dadf955b4e6ed6e86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _block: {fileID: 3036083899303520212}
 --- !u!1 &8769401013219231312
 GameObject:
   m_ObjectHideFlags: 0

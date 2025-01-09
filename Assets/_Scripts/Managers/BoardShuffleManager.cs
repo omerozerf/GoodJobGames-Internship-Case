@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Blocks;
+using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using Helpers;
 using Others;
@@ -134,8 +135,9 @@ namespace Managers
                         cellArray[row, col].SetBlock(blocks[index]);
                         blocks[index].SetCell(cellArray[row, col]);
 
-                        blocks[index].transform.DOKill();
-                        blocks[index].transform.DOMove(cellArray[row, col].transform.position, 0.5f).SetEase(Ease.OutBounce);
+                        blocks[index].GetAnimation()
+                            .DOMove(cellArray[row, col].transform.position, 0.5f, Ease.OutBounce)
+                            .Forget();
 
                         index++;
                     }
