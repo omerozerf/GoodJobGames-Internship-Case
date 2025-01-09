@@ -6,9 +6,9 @@ namespace Helpers
 {
     public static class FloodFillHelper
     {
-        private static readonly Stack<(int, int)> STACK = new Stack<(int, int)>(); // Shared stack
-        private static readonly HashSet<(int, int)> VISITED = new HashSet<(int, int)>(); // Shared HashSet
-        private static readonly List<Cell> MATCHED_CELLS = new List<Cell>(); // Shared matchedCells list
+        private static readonly Stack<(int, int)> STACK = new Stack<(int, int)>();
+        private static readonly HashSet<(int, int)> VISITED = new HashSet<(int, int)>();
+        private static readonly List<Cell> MATCHED_CELLS = new List<Cell>();
 
         public static List<Cell> Execute(Cell[,] cells, int rows, int columns, int startRow, int startCol, Func<Cell, bool> matchCriteria)
         {

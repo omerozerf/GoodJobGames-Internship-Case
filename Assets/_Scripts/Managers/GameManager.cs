@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Profiling;
 
 namespace Managers
 {
@@ -15,6 +16,10 @@ namespace Managers
         private void Awake()
         {
             InitializationSingleton();
+
+            UnityEditorInternal.ProfilerDriver.enabled = true;
+            Profiler.enabled = true;
+            Profiler.SetAreaEnabled(ProfilerArea.CPU, true);
         }
 
         private void InitializationSingleton()

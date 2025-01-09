@@ -105,10 +105,10 @@ namespace Others
 
         private async UniTask ClearRegionAsync(int startRow, int startCol)
         {
-            Func<Cell, bool> matchCriteria = cell =>
+            bool MatchCriteria(Cell cell) =>
                 cell.GetBlock()?.GetColor() == m_Cells[startRow, startCol].GetBlock()?.GetColor();
 
-            var matchedCells = FloodFill(startRow, startCol, matchCriteria);
+            var matchedCells = FloodFill(startRow, startCol, MatchCriteria);
 
             if (matchedCells.Count >= 2)
             {

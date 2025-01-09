@@ -623,7 +623,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _rows: 10
   _columns: 12
-  _colorsInGame: 2
+  _colorsInGame: 6
 --- !u!4 &1364990955
 Transform:
   m_ObjectHideFlags: 0
@@ -677,7 +677,6 @@ MonoBehaviour:
   - {fileID: 502827331108931231, guid: fb8ad5691acf04a4fbb40b0181a04c34, type: 3}
   - {fileID: 502827331108931231, guid: c5a5eb673ea454cdebbdfb2d40b4ca57, type: 3}
   _blockPoolTransform: {fileID: 823575035}
-  _poolSizeBuffer: 200
 --- !u!4 &1402333868
 Transform:
   m_ObjectHideFlags: 0
