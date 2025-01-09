@@ -37,7 +37,7 @@ namespace Others
             SetCanInteract(true);
             InitializeGameSettings();
             InitializeBoard();
-            FillEmptyCellsAsync();
+            FillEmptyCells();
 
             OnBoardCreated?.Invoke(m_Rows, m_Columns, m_Cells);
         }
@@ -134,10 +134,10 @@ namespace Others
 
             await UniTask.WaitForSeconds(scaleTime);
 
-            FillEmptyCellsAsync();
+            FillEmptyCells();
         }
 
-        private void FillEmptyCellsAsync()
+        private void FillEmptyCells()
         {
             for (var col = 0; col < m_Columns; col++)
             {

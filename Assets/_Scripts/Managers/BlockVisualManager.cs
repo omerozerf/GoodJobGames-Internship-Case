@@ -42,8 +42,7 @@ namespace Managers
                     var block = cellArray[row, col].GetBlock();
                     if (!block) continue;
 
-                    var sortingOrder = row;
-                    block.GetVisual().SetOrderInLayer(sortingOrder);
+                    block.GetVisual().SetOrderInLayer(row);
                 }
             }
         }
