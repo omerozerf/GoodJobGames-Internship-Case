@@ -186,7 +186,7 @@ namespace Others
             newBlock.SetCell(m_Cells[row, col]);
 
             newBlock.GetAnimation()
-                .DOMove(m_Cells[row, col].transform.position, 0.5f, Ease.OutBounce)
+                .DOMove(m_Cells[row, col].transform.position, _newBlockMoveTime, Ease.OutBounce)
                 .Forget();
         }
 

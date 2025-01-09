@@ -306,7 +306,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_BackGroundColor: {r: 0.18039216, g: 0.18039216, b: 0.18039216, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -573,9 +573,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59e365d023f349d5a362b8d81a6fe959, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _blastBlockTime: 0.5
+  _blastBlockTime: 0.35
   _moveBlockDownTime: 0.3
-  _newBlockMoveTime: 0.5
+  _newBlockMoveTime: 2
   _cellPrefab: {fileID: 4632056171363456540, guid: 12b10c92e81994db7965ed8a51f88dd2, type: 3}
   _blockCreateManager: {fileID: 1402333867}
   _cellsTransform: {fileID: 1100327061}
