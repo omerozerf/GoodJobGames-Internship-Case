@@ -32,6 +32,7 @@ namespace Others
         private Cell[,] m_Cells;
         private bool m_CanInteract;
 
+        
         private void Awake()
         {
             PlayerInputManager.OnMouseClick += HandleOnMouseClick;
@@ -55,22 +56,28 @@ namespace Others
 
         private async void HandleOnMouseClick(Vector2 mousePosition)
         {
-            if (!GetCanInteract()) return;
-            var hit = Physics2D.Raycast(mousePosition, Vector2.zero);
-            if (!hit.collider) return;
-
-            if (hit.collider.TryGetComponent(out BlockCollision blockCollision))
+            try
             {
-                var block = blockCollision.GetBlock();
-                if (!block) return;
+                if (!GetCanInteract()) return;
+                var hit = Physics2D.Raycast(mousePosition, Vector2.zero);
+                if (!hit.collider) return;
 
-                SetCanInteract(false);
-                await ClearRegionAsync(block.GetCell().GetRow(), block.GetCell().GetColumn());
+                if (hit.collider.TryGetComponent(out BlockCollision blockCollision))
+                {
+                    var block = blockCollision.GetBlock();
+                    if (!block) return;
 
-                OnClearRegionEnded?.Invoke(m_Rows, m_Columns, m_Cells);
-                SetCanInteract(true);
+                    SetCanInteract(false);
+                    await ClearRegionAsync(block.GetCell().GetRow(), block.GetCell().GetColumn());
+
+                    OnClearRegionEnded?.Invoke(m_Rows, m_Columns, m_Cells);
+                    SetCanInteract(true);
+                }
             }
-
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
         }
 
 
