@@ -13,40 +13,54 @@ namespace Blocks
         private const int PUNCH_VIBRATO = 0;
 
         
-        public async UniTask DOMove(Vector3 targetPosition, float speed, Ease ease, TweenCallback onComplete = null)
+        private void ApplyPunchEffect()
+        {
+            _block.transform.DOPunchPosition(PUNCH_POSITION_OFFSET, PUNCH_DURATION, PUNCH_VIBRATO);
+        }
+
+        private void KillExistingTweens()
         {
             _block.transform.DOKill();
+        }
 
-            var tween = _block.transform.DOMove(targetPosition, speed)
+        private void AddCompletionCallback(Tween tween, TweenCallback onComplete)
+        {
+            if (onComplete != null)
+            {
+                tween.OnComplete(onComplete.Invoke);
+            }
+        }
+
+        private async UniTask WaitForTweenCompletion(Tween tween)
+        {
+            await UniTask.WaitUntil(() => !tween.IsActive());
+        }
+        
+        
+        public async UniTask DoMove(Vector3 targetPosition, float speed, Ease ease, TweenCallback onComplete = null)
+        {
+            KillExistingTweens();
+
+            Tween moveTween = _block.transform.DOMove(targetPosition, speed)
                 .SetEase(ease)
                 .SetSpeedBased()
-                .OnComplete(() =>
-                {
-                    _block.transform.DOPunchPosition(PUNCH_POSITION_OFFSET, PUNCH_DURATION, PUNCH_VIBRATO);
-                });
+                .OnComplete(ApplyPunchEffect);
 
-            if (onComplete != null)
-                tween.OnComplete(() => HandleTweenComplete(onComplete));
+            AddCompletionCallback(moveTween, onComplete);
 
-            await UniTask.WaitUntil(() => !tween.IsActive());
+            await WaitForTweenCompletion(moveTween);
         }
 
-        public async UniTask DOScale(Vector3 targetScale, float duration, Ease ease, TweenCallback onComplete = null)
+        public async UniTask DoScale(Vector3 targetScale, float duration, Ease ease, TweenCallback onComplete = null)
         {
-            _block.transform.DOKill();
+            KillExistingTweens();
 
-            var tween = _block.transform.DOScale(targetScale, duration)
+            Tween scaleTween = _block.transform.DOScale(targetScale, duration)
                 .SetEase(ease);
 
-            if (onComplete != null)
-                tween.OnComplete(() => HandleTweenComplete(onComplete));
+            AddCompletionCallback(scaleTween, onComplete);
 
-            await UniTask.WaitUntil(() => !tween.IsActive());
-        }
-
-        private void HandleTweenComplete(TweenCallback onComplete)
-        {
-            onComplete?.Invoke();
+            await WaitForTweenCompletion(scaleTween);
         }
     }
 }

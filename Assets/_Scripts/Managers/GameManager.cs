@@ -16,6 +16,7 @@ namespace Managers
         private void Awake()
         {
             InitializationSingleton();
+            DOTween.SetTweensCapacity(500, 100);
         }
 
         private void InitializationSingleton()

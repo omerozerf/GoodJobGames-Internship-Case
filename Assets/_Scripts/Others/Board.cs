@@ -135,7 +135,7 @@ namespace Others
                 var block = cell.GetBlock();
                 if (block)
                 {
-                    block.GetAnimation().DOScale(Vector3.zero, _blastBlockTime, Ease.InBack, () =>
+                    block.GetAnimation().DoScale(Vector3.zero, _blastBlockTime, Ease.InBack, () =>
                     {
                         _blockCreateManager.ReturnBlockToPool(block);
                     }).Forget();
@@ -153,12 +153,19 @@ namespace Others
         {
             for (var col = 0; col < m_Columns; col++)
             {
+                int creationCounter = 0; // Sütundaki blok oluşturma sırası
+
                 for (var row = 0; row < m_Rows; row++)
                 {
                     if (m_Cells[row, col].GetBlock()) continue;
 
                     MoveBlocksDown(row, col);
-                    CreateNewBlockIfEmpty(row, col);
+
+                    // Yeni bir blok oluşturuluyorsa sırasını gönder
+                    if (TryCreateNewBlockIfEmpty(row, col, creationCounter))
+                    {
+                        creationCounter++; // Sayaç artırılır
+                    }
                 }
             }
             OnFillEmptyCellsEnded?.Invoke(m_Rows, m_Columns, m_Cells);
@@ -177,37 +184,32 @@ namespace Others
                 block.SetCell(m_Cells[row, col]);
 
                 block.GetAnimation()
-                    .DOMove(m_Cells[row, col].transform.position, _moveBlockDownSpeed, Ease.Linear)
+                    .DoMove(m_Cells[row, col].transform.position, _moveBlockDownSpeed, Ease.Linear)
                     .Forget();
 
                 break;
             }
         }
 
-        private void CreateNewBlockIfEmpty(int row, int col)
+        private bool TryCreateNewBlockIfEmpty(int row, int col, int creationCounter)
         {
-            if (m_Cells[row, col].GetBlock()) return;
+            if (m_Cells[row, col].GetBlock()) return false;
+            
+            CreateNewBlockEmpty(row, col, creationCounter);
+            return true;
+        }
 
-            int blocksInColumn = CountBlocksInColumn(col);
-
-            var newBlock = _blockCreateManager.CreateRandomBlockWithOffset(col, blocksInColumn, m_Cells);
+        private void CreateNewBlockEmpty(int row, int col, int creationCounter)
+        {
+            var newBlock = _blockCreateManager.CreateRandomBlockWithOffset(col, creationCounter, m_Cells);
             m_Cells[row, col].SetBlock(newBlock);
             newBlock.SetCell(m_Cells[row, col]);
 
             newBlock.GetAnimation()
-                .DOMove(m_Cells[row, col].transform.position, _newBlockMoveSpeed, Ease.Linear)
+                .DoMove(m_Cells[row, col].transform.position, _newBlockMoveSpeed, Ease.Linear)
                 .Forget();
         }
 
-        private int CountBlocksInColumn(int col)
-        {
-            int count = 0;
-            for (var row = 0; row < m_Rows; row++)
-            {
-                if (m_Cells[row, col].GetBlock()) count++;
-            }
-            return count;
-        }
 
         public List<Cell> FloodFill(int startRow, int startCol, Func<Cell, bool> matchCriteria)
         {

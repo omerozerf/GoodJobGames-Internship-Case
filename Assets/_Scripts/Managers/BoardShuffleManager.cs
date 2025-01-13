@@ -136,7 +136,7 @@ namespace Managers
                         blocks[index].SetCell(cellArray[row, col]);
 
                         blocks[index].GetAnimation()
-                            .DOMove(cellArray[row, col].transform.position, 0.5f, Ease.OutBounce)
+                            .DoMove(cellArray[row, col].transform.position, 0.5f, Ease.OutBounce)
                             .Forget();
 
                         index++;

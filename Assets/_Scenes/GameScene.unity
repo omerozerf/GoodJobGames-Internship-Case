@@ -626,7 +626,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _rows: 12
   _columns: 10
-  _colorsInGame: 3
+  _colorsInGame: 2
 --- !u!4 &1364990955
 Transform:
   m_ObjectHideFlags: 0
