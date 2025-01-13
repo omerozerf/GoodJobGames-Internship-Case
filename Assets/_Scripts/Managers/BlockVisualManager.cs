@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Others;
 using UnityEngine;
 
@@ -6,6 +7,9 @@ namespace Managers
     public class BlockVisualManager : MonoBehaviour
     {
         [SerializeField] private Board _board;
+        
+        private readonly HashSet<Cell> m_Visited = new HashSet<Cell>();
+        private readonly Dictionary<Cell, int> m_GroupCache = new Dictionary<Cell, int>();
 
         private void Awake()
         {
@@ -49,33 +53,38 @@ namespace Managers
 
         private void UpdateAllBlockSpritesBasedOnGroupSize(int rows, int columns, Cell[,] cellArray)
         {
-            var visited = new bool[rows][];
-            for (var index = 0; index < rows; index++)
-            {
-                visited[index] = new bool[columns];
-            }
+            // 1. Visited hücrelerin takibi için bir HashSet kullanıyoruz.
+            m_Visited.Clear();
 
-            for (var row = 0; row < rows; row++)
+            // 2. Grup boyutlarını cache etmek için bir Dictionary kullanıyoruz.
+            m_GroupCache.Clear();
+
+            // 3. Bütün hücreleri iteratif olarak dolaşıyoruz.
+            for (int row = 0; row < rows; row++)
             {
-                for (var col = 0; col < columns; col++)
+                for (int col = 0; col < columns; col++)
                 {
-                    if (visited[row][col]) continue;
+                    var currentCell = cellArray[row, col];
+            
+                    // Hücre zaten ziyaret edildiyse veya boşsa işlem yapma.
+                    if (m_Visited.Contains(currentCell) || currentCell.GetBlock() == null)
+                        continue;
 
-                    var block = cellArray[row, col].GetBlock();
-                    if (!block) continue;
+                    // 4. Flood-Fill algoritmasını çalıştır ve grup hücrelerini al.
+                    var groupCells = _board.FloodFill(row, col, (cell) =>
+                        cell.GetBlock()?.GetColor() == currentCell.GetBlock().GetColor());
 
-                    var groupCells = _board.FloodFill(row, col, cell =>
-                        cell.GetBlock()?.GetColor() == block.GetColor());
-
-                    foreach (var cell in groupCells)
+                    // Grup hücrelerini visited listesine ekle ve cache'le.
+                    foreach (var groupCell in groupCells)
                     {
-                        visited[cell.GetRow()][cell.GetColumn()] = true;
+                        m_Visited.Add(groupCell);
+                        m_GroupCache[groupCell] = groupCells.Count;
                     }
 
-                    foreach (var cell in groupCells)
+                    // Grup boyutuna göre sprite'ları güncelle.
+                    foreach (var groupCell in groupCells)
                     {
-                        var groupBlock = cell.GetBlock();
-                        groupBlock?.GetVisual()
+                        groupCell.GetBlock()?.GetVisual()
                             ?.UpdateSpriteBasedOnGroupSize(groupCells.Count, GameManager.GetColorsInGame());
                     }
                 }

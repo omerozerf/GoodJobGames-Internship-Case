@@ -6,46 +6,62 @@ namespace Helpers
 {
     public static class FloodFillHelper
     {
-        private static readonly Stack<(int, int)> STACK = new Stack<(int, int)>();
-        private static readonly HashSet<(int, int)> VISITED = new HashSet<(int, int)>();
-        private static readonly List<Cell> MATCHED_CELLS = new List<Cell>();
+        private static bool[] visitedPool;
+        private static Stack<int> stackPool;
 
         public static List<Cell> Execute(Cell[,] cells, int rows, int columns, int startRow, int startCol, Func<Cell, bool> matchCriteria)
         {
-            // Clear shared collections
-            STACK.Clear();
-            VISITED.Clear();
-            MATCHED_CELLS.Clear();
-
-            // Initialize with the starting point
-            STACK.Push((startRow, startCol));
-
-            while (STACK.Count > 0)
+            // Havuzlanan visited dizisi
+            if (visitedPool == null || visitedPool.Length < rows * columns)
             {
-                var (row, col) = STACK.Pop();
+                visitedPool = new bool[rows * columns];
+            }
+            else
+            {
+                Array.Clear(visitedPool, 0, visitedPool.Length);
+            }
+
+            // Havuzlanan stack
+            stackPool ??= new Stack<int>(rows * columns);
+            stackPool.Clear();
+
+            // Matched cells
+            var matchedCells = new List<Cell>(rows * columns);
+
+            // Başlangıç pozisyonunu stack'e ekle
+            stackPool.Push(startRow * columns + startCol);
+
+            while (stackPool.Count > 0)
+            {
+                var position = stackPool.Pop();
+                int row = position / columns;
+                int col = position % columns;
 
                 // Boundary check
                 if (row < 0 || row >= rows || col < 0 || col >= columns)
                     continue;
 
-                // Check if already visited or doesn't match criteria
-                if (VISITED.Contains((row, col)) || !matchCriteria(cells[row, col]))
+                // Indexi hesapla
+                int index = row * columns + col;
+
+                // Zaten ziyaret edildiyse veya eşleşmiyorsa devam et
+                if (visitedPool[index] || !matchCriteria(cells[row, col]))
                     continue;
 
-                // Mark as visited
-                VISITED.Add((row, col));
+                // Ziyaret edildi olarak işaretle
+                visitedPool[index] = true;
 
-                // Add to matched cells
-                MATCHED_CELLS.Add(cells[row, col]);
+                // Eşleşen hücreyi ekle
+                matchedCells.Add(cells[row, col]);
 
-                // Push neighbors to stack
-                STACK.Push((row - 1, col)); // Up
-                STACK.Push((row + 1, col)); // Down
-                STACK.Push((row, col - 1)); // Left
-                STACK.Push((row, col + 1)); // Right
+                // Komşuları stack'e ekle
+                if (row > 0) stackPool.Push((row - 1) * columns + col);     // Yukarı
+                if (row < rows - 1) stackPool.Push((row + 1) * columns + col); // Aşağı
+                if (col > 0) stackPool.Push(row * columns + (col - 1));     // Sol
+                if (col < columns - 1) stackPool.Push(row * columns + (col + 1)); // Sağ
             }
 
-            return MATCHED_CELLS;
+            return matchedCells;
         }
     }
 }

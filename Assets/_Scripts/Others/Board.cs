@@ -25,7 +25,7 @@ namespace Others
         public static event Action<int, int, Cell[,]> OnFillEmptyCellsEnded;
         public static event Action<int, int, Cell[,]> OnBoardCreated;
         public static event Action<int, int, Cell[,]> OnClearRegionEnded;
-
+        
         private int m_Rows;
         private int m_Columns;
         private int m_ColorsInGame;
@@ -59,24 +59,21 @@ namespace Others
             try
             {
                 if (!GetCanInteract()) return;
+
                 var hit = Physics2D.Raycast(mousePosition, Vector2.zero);
-                if (!hit.collider) return;
+                if (!hit.collider || !hit.collider.TryGetComponent(out BlockCollision blockCollision)) return;
+                
+                var block = blockCollision.GetBlock();
+                if (!block) return;
 
-                if (hit.collider.TryGetComponent(out BlockCollision blockCollision))
-                {
-                    var block = blockCollision.GetBlock();
-                    if (!block) return;
-
-                    SetCanInteract(false);
-                    await ClearRegionAsync(block.GetCell().GetRow(), block.GetCell().GetColumn());
-
-                    OnClearRegionEnded?.Invoke(m_Rows, m_Columns, m_Cells);
-                    SetCanInteract(true);
-                }
+                SetCanInteract(false);
+                await ClearRegionAsync(block.GetCell().GetRow(), block.GetCell().GetColumn());
+                OnClearRegionEnded?.Invoke(m_Rows, m_Columns, m_Cells);
+                SetCanInteract(true);
             }
             catch (Exception e)
             {
-                throw new Exception(e.Message);
+                throw new Exception($"Error on HandleOnMouseClick: {e.Message}");
             }
         }
 

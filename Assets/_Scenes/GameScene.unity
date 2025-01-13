@@ -624,8 +624,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd5494b87ec49809d4f5cdc90b0afbd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _rows: 3
-  _columns: 3
+  _rows: 10
+  _columns: 12
   _colorsInGame: 6
 --- !u!4 &1364990955
 Transform:

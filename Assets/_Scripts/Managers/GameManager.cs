@@ -17,6 +17,7 @@ namespace Managers
         {
             InitializationSingleton();
             DOTween.SetTweensCapacity(500, 100);
+            DOTween.defaultRecyclable = true;
         }
 
         private void InitializationSingleton()
