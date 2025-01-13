@@ -13,11 +13,10 @@ namespace Managers
     public class BoardShuffleManager : MonoBehaviour
     {
         [SerializeField] private float _shuffleSpeed;
-        
+
         public static event Action<int, int, Cell[,]> OnShuffleBoardEnded;
 
-        private List<Cell> _reusableGroupCells = new List<Cell>();
-        private bool[][] _visitedCache;
+        private bool[][] m_VisitedCache;
 
 
         private void Awake()
@@ -47,7 +46,7 @@ namespace Managers
         private bool CheckForPossibleMoves(int rows, int columns, Cell[,] cellArray)
         {
             EnsureVisitedCache(rows, columns);
-            var visited = _visitedCache;
+            var visited = m_VisitedCache;
 
             for (var row = 0; row < rows; row++)
             {
@@ -78,19 +77,19 @@ namespace Managers
 
         private void EnsureVisitedCache(int rows, int columns)
         {
-            if (_visitedCache == null || _visitedCache.Length != rows || _visitedCache[0].Length != columns)
+            if (m_VisitedCache == null || m_VisitedCache.Length != rows || m_VisitedCache[0].Length != columns)
             {
-                _visitedCache = new bool[rows][];
+                m_VisitedCache = new bool[rows][];
                 for (var i = 0; i < rows; i++)
                 {
-                    _visitedCache[i] = new bool[columns];
+                    m_VisitedCache[i] = new bool[columns];
                 }
             }
             else
             {
                 for (var i = 0; i < rows; i++)
                 {
-                    Array.Clear(_visitedCache[i], 0, columns);
+                    Array.Clear(m_VisitedCache[i], 0, columns);
                 }
             }
         }
@@ -99,13 +98,84 @@ namespace Managers
         {
             if (CheckForPossibleMoves(rows, columns, cellArray)) return false;
 
-            ShuffleBoard(rows, columns, cellArray);
+            ShuffleBoardWithClusters(rows, columns, cellArray);
             return true;
         }
-
-        private void ShuffleBoard(int rows, int columns, Cell[,] cellArray)
+        
+        private void ShuffleBoardWithClusters(int rows, int columns, Cell[,] cellArray)
         {
-            Debug.Log("Shuffling board...");
+            Debug.Log("Shuffle Board With Clusters");
+            
+            var blockGroups = new Dictionary<BlockColor, List<Block>>();
+            for (var row = 0; row < rows; row++)
+            {
+                for (var col = 0; col < columns; col++)
+                {
+                    var block = cellArray[row, col].GetBlock();
+                    if (!block) continue;
+                    
+                    var color = block.GetColor();
+                    if (!blockGroups.ContainsKey(color))
+                    {
+                        blockGroups[color] = new List<Block>();
+                    }
+                    blockGroups[color].Add(block);
+                    cellArray[row, col].ClearBlock();
+                }
+            }
+
+            var emptyCells = new List<Cell>();
+            for (var row = 0; row < rows; row++)
+            {
+                for (var col = 0; col < columns; col++)
+                {
+                    if (!cellArray[row, col].GetBlock())
+                    {
+                        emptyCells.Add(cellArray[row, col]);
+                    }
+                }
+            }
+
+            var random = new System.Random();
+
+            foreach (var color in blockGroups.Keys)
+            {
+                var blocks = blockGroups[color];
+
+                var placementMode = random.Next(3);
+
+                var orderedCells = placementMode switch
+                {
+                    0 => emptyCells.OrderBy(cell => cell.GetRow() * columns + cell.GetColumn()).ToList(),
+                    1 => emptyCells.OrderBy(cell => cell.GetColumn() * rows + cell.GetRow()).ToList(),
+                    var _ => emptyCells.OrderBy(_ => random.Next()).ToList()
+                };
+
+                foreach (var block in blocks)
+                {
+                    if (orderedCells.Count == 0)
+                    {
+                        return;
+                    }
+
+                    var targetCell = orderedCells[0];
+                    orderedCells.RemoveAt(0);
+                    emptyCells.Remove(targetCell);
+
+                    targetCell.SetBlock(block);
+                    block.SetCell(targetCell);
+
+                    block.GetAnimation()
+                        .DoMove(targetCell.transform.position, _shuffleSpeed, Ease.Linear)
+                        .Forget();
+                }
+            }
+            OnShuffleBoardEnded?.Invoke(rows, columns, cellArray);
+        }
+        
+        private void RandomShuffleBoard(int rows, int columns, Cell[,] cellArray)
+        {
+            Debug.Log("Random Shuffle");
             
             var blocks = new List<Block>();
             for (var row = 0; row < rows; row++)
@@ -113,18 +183,17 @@ namespace Managers
                 for (var col = 0; col < columns; col++)
                 {
                     var block = cellArray[row, col].GetBlock();
-                    if (block)
-                    {
-                        blocks.Add(block);
-                        cellArray[row, col].ClearBlock();
-                    }
+                    if (!block) continue;
+                    
+                    blocks.Add(block);
+                    cellArray[row, col].ClearBlock();
                 }
             }
 
             var random = new System.Random();
-            for (int i = blocks.Count - 1; i > 0; i--)
+            for (var i = blocks.Count - 1; i > 0; i--)
             {
-                int j = random.Next(i + 1);
+                var j = random.Next(i + 1);
                 (blocks[i], blocks[j]) = (blocks[j], blocks[i]);
             }
 
@@ -133,18 +202,17 @@ namespace Managers
             {
                 for (var col = 0; col < columns; col++)
                 {
-                    if (index < blocks.Count)
-                    {
-                        cellArray[row, col].ClearBlock();
-                        cellArray[row, col].SetBlock(blocks[index]);
-                        blocks[index].SetCell(cellArray[row, col]);
+                    if (index >= blocks.Count) continue;
+                    
+                    cellArray[row, col].ClearBlock();
+                    cellArray[row, col].SetBlock(blocks[index]);
+                    blocks[index].SetCell(cellArray[row, col]);
 
-                        blocks[index].GetAnimation()
-                            .DoMove(cellArray[row, col].transform.position, _shuffleSpeed, Ease.Linear)
-                            .Forget();
+                    blocks[index].GetAnimation()
+                        .DoMove(cellArray[row, col].transform.position, _shuffleSpeed, Ease.Linear)
+                        .Forget();
 
-                        index++;
-                    }
+                    index++;
                 }
             }
 
