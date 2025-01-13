@@ -77,7 +77,7 @@ namespace Managers
 
         private void EnsureVisitedCache(int rows, int columns)
         {
-            if (m_VisitedCache == null || m_VisitedCache.Length != rows || m_VisitedCache[0].Length != columns)
+            if (m_VisitedCache == null || m_VisitedCache.Length < rows)
             {
                 m_VisitedCache = new bool[rows][];
                 for (var i = 0; i < rows; i++)
@@ -89,7 +89,10 @@ namespace Managers
             {
                 for (var i = 0; i < rows; i++)
                 {
-                    Array.Clear(m_VisitedCache[i], 0, columns);
+                    if (m_VisitedCache[i] == null || m_VisitedCache[i].Length < columns)
+                        m_VisitedCache[i] = new bool[columns];
+                    else
+                        Array.Clear(m_VisitedCache[i], 0, columns);
                 }
             }
         }
@@ -104,8 +107,6 @@ namespace Managers
         
         private void ShuffleBoardWithClusters(int rows, int columns, Cell[,] cellArray)
         {
-            Debug.Log("Shuffle Board With Clusters");
-            
             var blockGroups = new Dictionary<BlockColor, List<Block>>();
             for (var row = 0; row < rows; row++)
             {
