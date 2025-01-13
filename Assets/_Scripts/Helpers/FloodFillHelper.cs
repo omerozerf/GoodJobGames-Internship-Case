@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Others;
 
@@ -8,6 +9,7 @@ namespace Helpers
     {
         private static bool[] visitedPool;
         private static Stack<int> stackPool;
+        private static readonly ConcurrentBag<List<Cell>> cellListPool = new();
 
         public static List<Cell> Execute(Cell[,] cells, int rows, int columns, int startRow, int startCol, Func<Cell, bool> matchCriteria)
         {
@@ -25,8 +27,9 @@ namespace Helpers
             stackPool ??= new Stack<int>(rows * columns);
             stackPool.Clear();
 
-            // Matched cells
-            var matchedCells = new List<Cell>(rows * columns);
+            // Havuzdan bir liste al veya yeni oluştur
+            var matchedCells = cellListPool.TryTake(out var list) ? list : new List<Cell>(rows * columns);
+            matchedCells.Clear();
 
             // Başlangıç pozisyonunu stack'e ekle
             stackPool.Push(startRow * columns + startCol);
@@ -60,6 +63,9 @@ namespace Helpers
                 if (col > 0) stackPool.Push(row * columns + (col - 1));     // Sol
                 if (col < columns - 1) stackPool.Push(row * columns + (col + 1)); // Sağ
             }
+
+            // Havuzu temizleme mantığını kullanıcının belirttiği bir noktada çağırmak gereklidir
+            cellListPool.Add(matchedCells);
 
             return matchedCells;
         }
