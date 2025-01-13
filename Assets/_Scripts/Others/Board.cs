@@ -188,13 +188,25 @@ namespace Others
         {
             if (m_Cells[row, col].GetBlock()) return;
 
-            var newBlock = _blockCreateManager.CreateRandomBlock(col, m_Cells);
+            int blocksInColumn = CountBlocksInColumn(col);
+
+            var newBlock = _blockCreateManager.CreateRandomBlockWithOffset(col, blocksInColumn, m_Cells);
             m_Cells[row, col].SetBlock(newBlock);
             newBlock.SetCell(m_Cells[row, col]);
 
             newBlock.GetAnimation()
                 .DOMove(m_Cells[row, col].transform.position, _newBlockMoveSpeed, Ease.Linear)
                 .Forget();
+        }
+
+        private int CountBlocksInColumn(int col)
+        {
+            int count = 0;
+            for (var row = 0; row < m_Rows; row++)
+            {
+                if (m_Cells[row, col].GetBlock()) count++;
+            }
+            return count;
         }
 
         public List<Cell> FloodFill(int startRow, int startCol, Func<Cell, bool> matchCriteria)
@@ -205,6 +217,16 @@ namespace Others
         public int GetColorsInGame()
         {
             return m_ColorsInGame;
+        }
+        
+        public int GetRows()
+        {
+            return m_Rows;
+        }
+
+        public int GetColumns()
+        {
+            return m_Columns;
         }
     }
 }

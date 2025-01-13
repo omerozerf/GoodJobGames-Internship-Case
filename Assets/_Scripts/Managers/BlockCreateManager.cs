@@ -64,16 +64,17 @@ namespace Managers
         }
 
         
-        public Block CreateRandomBlock(int column, Cell[,] cellArray)
+        public Block CreateRandomBlockWithOffset(int column, int blocksInColumn, Cell[,] cellArray)
         {
             var keys = m_BlockPools.Keys.ToList();
             var randomKey = keys[Random.Range(0, keys.Count)];
 
             var block = GetBlockFromPool(_blockPrefabArray.First(blockPrefab => blockPrefab.GetColor() == randomKey));
 
+            var offset = blocksInColumn * _blockPrefabArray[0].transform.localScale.y + 3.0f;
             block.transform.position = new Vector3(
                 cellArray[0, column].transform.position.x,
-                m_MainCamera.transform.position.y + m_MainCamera.orthographicSize + 2.0f,
+                m_MainCamera.transform.position.y + m_MainCamera.orthographicSize + offset - _board.GetRows(),
                 0
             );
 

@@ -624,9 +624,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd5494b87ec49809d4f5cdc90b0afbd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _rows: 10
-  _columns: 12
-  _colorsInGame: 6
+  _rows: 12
+  _columns: 10
+  _colorsInGame: 3
 --- !u!4 &1364990955
 Transform:
   m_ObjectHideFlags: 0
