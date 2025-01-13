@@ -12,6 +12,8 @@ namespace Managers
 {
     public class BoardShuffleManager : MonoBehaviour
     {
+        [SerializeField] private float _shuffleSpeed;
+        
         public static event Action<int, int, Cell[,]> OnShuffleBoardEnded;
 
         private List<Cell> _reusableGroupCells = new List<Cell>();
@@ -103,6 +105,8 @@ namespace Managers
 
         private void ShuffleBoard(int rows, int columns, Cell[,] cellArray)
         {
+            Debug.Log("Shuffling board...");
+            
             var blocks = new List<Block>();
             for (var row = 0; row < rows; row++)
             {
@@ -136,7 +140,7 @@ namespace Managers
                         blocks[index].SetCell(cellArray[row, col]);
 
                         blocks[index].GetAnimation()
-                            .DoMove(cellArray[row, col].transform.position, 0.5f, Ease.OutBounce)
+                            .DoMove(cellArray[row, col].transform.position, _shuffleSpeed, Ease.Linear)
                             .Forget();
 
                         index++;

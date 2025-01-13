@@ -624,9 +624,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfd5494b87ec49809d4f5cdc90b0afbd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _rows: 12
-  _columns: 10
-  _colorsInGame: 2
+  _rows: 3
+  _columns: 3
+  _colorsInGame: 6
 --- !u!4 &1364990955
 Transform:
   m_ObjectHideFlags: 0
@@ -802,6 +802,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 816d6e34b6aa4ea78894c33090a10409, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _shuffleSpeed: 10
 --- !u!1 &1854949114
 GameObject:
   m_ObjectHideFlags: 0

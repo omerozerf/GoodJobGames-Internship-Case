@@ -153,7 +153,7 @@ namespace Others
         {
             for (var col = 0; col < m_Columns; col++)
             {
-                int creationCounter = 0; // Sütundaki blok oluşturma sırası
+                int creationCounter = 0;
 
                 for (var row = 0; row < m_Rows; row++)
                 {
@@ -161,10 +161,9 @@ namespace Others
 
                     MoveBlocksDown(row, col);
 
-                    // Yeni bir blok oluşturuluyorsa sırasını gönder
                     if (TryCreateNewBlockIfEmpty(row, col, creationCounter))
                     {
-                        creationCounter++; // Sayaç artırılır
+                        creationCounter++;
                     }
                 }
             }
