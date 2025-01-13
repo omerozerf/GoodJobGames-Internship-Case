@@ -8,13 +8,22 @@ namespace Blocks
     {
         [SerializeField] private Block _block;
 
+        private static readonly Vector3 PUNCH_POSITION_OFFSET = new Vector3(0, 0.15f, 0);
+        private const float PUNCH_DURATION = 0.25f;
+        private const int PUNCH_VIBRATO = 0;
+
         
-        public async UniTask DOMove(Vector3 targetPosition, float duration, Ease ease, TweenCallback onComplete = null)
+        public async UniTask DOMove(Vector3 targetPosition, float speed, Ease ease, TweenCallback onComplete = null)
         {
             _block.transform.DOKill();
 
-            var tween = _block.transform.DOMove(targetPosition, duration)
-                .SetEase(ease);
+            var tween = _block.transform.DOMove(targetPosition, speed)
+                .SetEase(ease)
+                .SetSpeedBased()
+                .OnComplete(() =>
+                {
+                    _block.transform.DOPunchPosition(PUNCH_POSITION_OFFSET, PUNCH_DURATION, PUNCH_VIBRATO);
+                });
 
             if (onComplete != null)
                 tween.OnComplete(() => HandleTweenComplete(onComplete));

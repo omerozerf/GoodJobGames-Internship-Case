@@ -11,10 +11,10 @@ namespace Others
 {
     public class Board : MonoBehaviour
     {
-        [Header("Block Animation Times")]
+        [Header("Block Animation Settings")]
         [SerializeField] private float _blastBlockTime;
-        [SerializeField] private float _moveBlockDownTime;
-        [SerializeField] private float _newBlockMoveTime;
+        [SerializeField] private float _moveBlockDownSpeed;
+        [SerializeField] private float _newBlockMoveSpeed;
 
         [Header("References")]
         [SerializeField] private Cell _cellPrefab;
@@ -177,7 +177,7 @@ namespace Others
                 block.SetCell(m_Cells[row, col]);
 
                 block.GetAnimation()
-                    .DOMove(m_Cells[row, col].transform.position, _moveBlockDownTime, Ease.OutBounce)
+                    .DOMove(m_Cells[row, col].transform.position, _moveBlockDownSpeed, Ease.Linear)
                     .Forget();
 
                 break;
@@ -193,7 +193,7 @@ namespace Others
             newBlock.SetCell(m_Cells[row, col]);
 
             newBlock.GetAnimation()
-                .DOMove(m_Cells[row, col].transform.position, _newBlockMoveTime, Ease.OutBounce)
+                .DOMove(m_Cells[row, col].transform.position, _newBlockMoveSpeed, Ease.Linear)
                 .Forget();
         }
 
