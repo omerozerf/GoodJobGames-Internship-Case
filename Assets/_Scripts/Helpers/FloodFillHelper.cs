@@ -7,10 +7,10 @@ namespace Helpers
 {
     public static class FloodFillHelper
     {
-        // Static fields to manage visited cells and traversal stack.
-        private static bool[] visitedCells;
-        private static Stack<int> traversalStack;
-        private static readonly ConcurrentBag<List<Cell>> cellListPool = new();
+        private static readonly ConcurrentBag<List<Cell>> CELL_LIST_POOL = new();
+        
+        private static bool[] ms_VisitedCells;
+        private static Stack<int> ms_TraversalStack;
 
         // Main execution method for flood fill algorithm.
         public static List<Cell> Execute(Cell[,] grid, int rowCount, int columnCount, int startRow, int startColumn, Func<Cell, bool> shouldVisit)
@@ -18,9 +18,9 @@ namespace Helpers
             InitializeVisitedCells(rowCount, columnCount);
             InitializeTraversalStack(rowCount, columnCount);
             var matchedCells = FetchOrCreateCellList(rowCount, columnCount);
-            traversalStack.Push(ComputeIndex(startRow, startColumn, columnCount));
+            ms_TraversalStack.Push(ComputeIndex(startRow, startColumn, columnCount));
             PerformFloodFill(grid, rowCount, columnCount, shouldVisit, matchedCells);
-            cellListPool.Add(matchedCells);
+            CELL_LIST_POOL.Add(matchedCells);
             return matchedCells;
         }
 
@@ -28,27 +28,27 @@ namespace Helpers
         private static void InitializeVisitedCells(int rowCount, int columnCount)
         {
             var totalCells = rowCount * columnCount;
-            if (visitedCells == null || visitedCells.Length < totalCells)
+            if (ms_VisitedCells == null || ms_VisitedCells.Length < totalCells)
             {
-                visitedCells = new bool[totalCells];
+                ms_VisitedCells = new bool[totalCells];
             }
             else
             {
-                Array.Clear(visitedCells, 0, visitedCells.Length);
+                Array.Clear(ms_VisitedCells, 0, ms_VisitedCells.Length);
             }
         }
 
         // Prepare or reset the stack used for tracking cell traversal.
         private static void InitializeTraversalStack(int rowCount, int columnCount)
         {
-            traversalStack ??= new Stack<int>(rowCount * columnCount);
-            traversalStack.Clear();
+            ms_TraversalStack ??= new Stack<int>(rowCount * columnCount);
+            ms_TraversalStack.Clear();
         }
 
         // Attempt to reuse a list from the pool or create a new list if none are available.
         private static List<Cell> FetchOrCreateCellList(int rowCount, int columnCount)
         {
-            return cellListPool.TryTake(out var list) ? list : new List<Cell>(rowCount * columnCount);
+            return CELL_LIST_POOL.TryTake(out var list) ? list : new List<Cell>(rowCount * columnCount);
         }
 
         // Helper to compute a one-dimensional index from two-dimensional coordinates.
@@ -61,19 +61,19 @@ namespace Helpers
         private static void PerformFloodFill(Cell[,] grid, int rowCount, int columnCount, Func<Cell, bool> shouldVisit, List<Cell> matchedCells)
         {
             matchedCells.Clear();
-            while (traversalStack.Count > 0)
+            while (ms_TraversalStack.Count > 0)
             {
-                var currentIndex = traversalStack.Pop();
+                var currentIndex = ms_TraversalStack.Pop();
                 var currentRow = currentIndex / columnCount;
                 var currentColumn = currentIndex % columnCount;
 
                 if (IsOutsideBounds(currentRow, rowCount, currentColumn, columnCount))
                     continue;
 
-                if (visitedCells[currentIndex] || !shouldVisit(grid[currentRow, currentColumn]))
+                if (ms_VisitedCells[currentIndex] || !shouldVisit(grid[currentRow, currentColumn]))
                     continue;
 
-                visitedCells[currentIndex] = true;
+                ms_VisitedCells[currentIndex] = true;
                 matchedCells.Add(grid[currentRow, currentColumn]);
                 PushAdjacentCells(currentRow, currentColumn, rowCount, columnCount);
             }
@@ -88,10 +88,10 @@ namespace Helpers
         // Add adjacent cells to the stack if they meet the bounds condition.
         private static void PushAdjacentCells(int row, int column, int rowCount, int columnCount)
         {
-            if (row > 0) traversalStack.Push(ComputeIndex(row - 1, column, columnCount));
-            if (row < rowCount - 1) traversalStack.Push(ComputeIndex(row + 1, column, columnCount));
-            if (column > 0) traversalStack.Push(ComputeIndex(row, column - 1, columnCount));
-            if (column < columnCount - 1) traversalStack.Push(ComputeIndex(row, column + 1, columnCount));
+            if (row > 0) ms_TraversalStack.Push(ComputeIndex(row - 1, column, columnCount));
+            if (row < rowCount - 1) ms_TraversalStack.Push(ComputeIndex(row + 1, column, columnCount));
+            if (column > 0) ms_TraversalStack.Push(ComputeIndex(row, column - 1, columnCount));
+            if (column < columnCount - 1) ms_TraversalStack.Push(ComputeIndex(row, column + 1, columnCount));
         }
     }
 }
