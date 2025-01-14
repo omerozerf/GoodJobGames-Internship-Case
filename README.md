@@ -10,7 +10,12 @@ Welcome to the **Color Block-Based Game System**! This project is a visually eng
 
 ---
 
-## 🌟 **How to Play**
+## 🎮 **Play the Game Here:** ## 
+👉 [Good Job Games Internship Case - Playable Demo](https://omerozerf.itch.io/good-job-games-internship-case)
+
+---
+
+## 🌟 **How to Play in Unity**
 
 1. Open the `GameScene` located in `Assets/_Scenes/GameScene`.  
 2. Navigate to the **Board** object to adjust:  
