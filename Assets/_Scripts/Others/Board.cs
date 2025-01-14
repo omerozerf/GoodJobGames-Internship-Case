@@ -53,8 +53,8 @@ namespace Others
         {
             PlayerInputManager.OnMouseClick -= HandleOnMouseClick;
         }
-
-
+        
+        // This method is used to handle the mouse click event.
         private async void HandleOnMouseClick(Vector2 mousePosition)
         {
             if (!GetCanInteract()) return;
@@ -90,6 +90,7 @@ namespace Others
             m_ColorsInGame = GameManager.GetColorsInGame();
         }
 
+        // This method is used to initialize the board.
         private void InitializeBoard()
         {
             m_Cells = new Cell[m_Rows, m_Columns];
@@ -106,7 +107,8 @@ namespace Others
 
             OnInitializeBoard?.Invoke(m_Rows, m_Columns);
         }
-
+        
+        // This method is used to clear the region of the clicked block.
         private async UniTask ClearRegionAsync(int startRow, int startCol)
         {
             bool MatchCriteria(Cell cell) =>
@@ -120,6 +122,7 @@ namespace Others
             }
         }
 
+        // This method is used to clear the matched cells.
         private async UniTask ClearMatchedCellsAsync(List<Cell> matchedCells)
         {
             foreach (var cell in matchedCells)
@@ -140,6 +143,7 @@ namespace Others
             FillEmptyCells();
         }
         
+        // This method is used to fill the empty cells with new blocks.
         private void FillEmptyCells()
         {
             for (var col = 0; col < m_Columns; col++)
@@ -161,6 +165,7 @@ namespace Others
             OnFillEmptyCellsEnded?.Invoke(m_Rows, m_Columns, m_Cells);
         }
 
+        // This method is used to move the blocks down if there is an empty cell below them.
         private void MoveBlocksDown(int row, int col)
         {
             for (var r = row + 1; r < m_Rows; r++)

@@ -35,6 +35,7 @@ namespace Managers
         }
 
 
+        // This method is used to initialize the block pools.
         private void InitializePools(int rows, int columns)
         {
             m_BlockPools = new Dictionary<BlockColor, ObjectPool<Block>>();
@@ -64,6 +65,7 @@ namespace Managers
         }
 
         
+        // This method is used to create a random block with an offset.
         public Block CreateRandomBlockWithOffset(int column, int creatingCounter, Cell[,] cellArray)
         {
             var keys = m_BlockPools.Keys.ToList();

@@ -40,6 +40,7 @@ namespace Managers
         }
 
 
+        // This method is used to update the sorting order of the blocks.
         private void UpdateBlockSortingOrder(int rows, int columns, Cell[,] cellArray)
         {
             for (var row = 0; row < rows; row++)
@@ -54,6 +55,7 @@ namespace Managers
             }
         }
 
+        // This method is used to update the sprites of the blocks based on the group size.
         private void UpdateAllBlockSpritesBasedOnGroupSize(int rows, int columns, Cell[,] cellArray)
         {
             m_Visited.Clear();

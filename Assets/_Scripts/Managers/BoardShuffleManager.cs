@@ -42,7 +42,8 @@ namespace Managers
             TryShuffleBoard(rows, columns, cellArray);
         }
 
-
+        
+        // This method is used to check if there are any possible moves on the board.
         private bool CheckForPossibleMoves(int rows, int columns, Cell[,] cellArray)
         {
             EnsureVisitedCache(rows, columns);
@@ -75,6 +76,7 @@ namespace Managers
             return false;
         }
 
+        // This method is used to ensure that the visited cache is created and has the correct size.
         private void EnsureVisitedCache(int rows, int columns)
         {
             if (m_VisitedCache == null || m_VisitedCache.Length < rows)
@@ -105,6 +107,7 @@ namespace Managers
             return true;
         }
         
+        // This method is used to shuffle the board with clusters.
         private void ShuffleBoardWithClusters(int rows, int columns, Cell[,] cellArray)
         {
             var blockGroups = new Dictionary<BlockColor, List<Block>>();
