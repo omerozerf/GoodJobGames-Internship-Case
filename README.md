@@ -1,27 +1,30 @@
-# 🎮 GoodJobGames Internship Case
-
 📌 **Currently Live:**  
 I developed a similar mechanic project that is live in the Karaca mobile app. You can explore it here:  
 👉 [Mobile Karaca App - Bubble Blast](https://omerozerf.notion.site/Mobile-Karaca-App-Bubble-Blast-162443d669db81fcbf7cd233dd9de7b7)
 
 ---
----
----
+
+# 🎮 GoodJobGames Internship Case
 
 Welcome to the **Color Block-Based Game System**! This project is a visually engaging, performance-optimized, and dynamic game system built with Unity. 🧱✨
 
 ---
 
-## 🌈 **Project Summary**
+## 🌟 **How to Play**
 
-The game provides a playing field of colored blocks, where players interact to eliminate groups of the same color while earning points. 🚀
+1. Open the `GameScene` located in `Assets/_Scenes/GameScene`.  
+2. Navigate to the **Board** object to adjust:  
+   - Animation durations or speeds.  
+3. Go to the **Game Manager** object to configure:  
+   - Number of rows and columns for the board.  
+   - The number of different block colors.  
+4. Hit the **Play** button in Unity to start the game! 🚀
 
 ---
 
-## 🎯 **Project Purpose**
+## 🌈 **Project Summary**
 
-- Create an interactive game with a scoring mechanism.
-- Dynamically manage and shuffle the game board for continuous playability.
+The game provides a playing field of colored blocks, where players interact to eliminate groups of the same color while earning points. 🎯
 
 ---
 
@@ -109,3 +112,5 @@ The game provides a playing field of colored blocks, where players interact to e
 ---
 
 Feel free to explore the project and contribute! 🎮✨
+
+Bu şekilde, How to Play bölümü oyunun nasıl oynanacağına dair net bir rehber sağlıyor.
