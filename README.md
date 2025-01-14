@@ -10,6 +10,11 @@ Welcome to the **Color Block-Based Game System**! This project is a visually eng
 
 ---
 
+## 🎥 **Gameplay Preview:** ## 
+![Gameplay](./gameplay.gif)
+
+---
+
 ## 🎮 **Play the Game Here:** ## 
 👉 [Good Job Games Internship Case - Playable Demo](https://omerozerf.itch.io/good-job-games-internship-case)
 
