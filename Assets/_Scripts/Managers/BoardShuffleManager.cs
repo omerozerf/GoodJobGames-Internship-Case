@@ -176,8 +176,6 @@ namespace Managers
         
         private void RandomShuffleBoard(int rows, int columns, Cell[,] cellArray)
         {
-            Debug.Log("Random Shuffle");
-            
             var blocks = new List<Block>();
             for (var row = 0; row < rows; row++)
             {

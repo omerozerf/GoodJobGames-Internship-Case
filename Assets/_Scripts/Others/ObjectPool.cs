@@ -15,7 +15,7 @@ namespace Others
             m_Prefab = prefab;
             m_Parent = parent;
 
-            for (int i = 0; i < initialCount; i++)
+            for (var i = 0; i < initialCount; i++)
             {
                 var obj = Object.Instantiate(m_Prefab, parent);
                 obj.gameObject.SetActive(false);

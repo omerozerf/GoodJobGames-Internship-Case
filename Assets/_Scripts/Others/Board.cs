@@ -4,6 +4,7 @@ using Blocks;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using Helpers;
+using Input_System;
 using Managers;
 using UnityEngine;
 
@@ -56,25 +57,19 @@ namespace Others
 
         private async void HandleOnMouseClick(Vector2 mousePosition)
         {
-            try
-            {
-                if (!GetCanInteract()) return;
+            if (!GetCanInteract()) return;
 
-                var hit = Physics2D.Raycast(mousePosition, Vector2.zero);
-                if (!hit.collider || !hit.collider.TryGetComponent(out BlockCollision blockCollision)) return;
+            var hit = Physics2D.Raycast(mousePosition, Vector2.zero);
+            if (!hit.collider || !hit.collider.TryGetComponent(out BlockCollision blockCollision)) return;
                 
-                var block = blockCollision.GetBlock();
-                if (!block) return;
+            var block = blockCollision.GetBlock();
+            if (!block) return;
 
-                SetCanInteract(false);
-                await ClearRegionAsync(block.GetCell().GetRow(), block.GetCell().GetColumn());
-                OnClearRegionEnded?.Invoke(m_Rows, m_Columns, m_Cells);
-                SetCanInteract(true);
-            }
-            catch (Exception e)
-            {
-                throw new Exception($"Error on HandleOnMouseClick: {e.Message}");
-            }
+            SetCanInteract(false);
+            await ClearRegionAsync(block.GetCell().GetRow(), block.GetCell().GetColumn());
+            
+            OnClearRegionEnded?.Invoke(m_Rows, m_Columns, m_Cells);
+            SetCanInteract(true);
         }
 
 
@@ -144,13 +139,12 @@ namespace Others
             await UniTask.WaitForSeconds(_blastBlockTime);
             FillEmptyCells();
         }
-
-
+        
         private void FillEmptyCells()
         {
             for (var col = 0; col < m_Columns; col++)
             {
-                int creationCounter = 0;
+                var creationCounter = 0;
 
                 for (var row = 0; row < m_Rows; row++)
                 {

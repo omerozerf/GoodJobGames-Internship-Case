@@ -71,9 +71,9 @@ namespace Managers
 
             var block = GetBlockFromPool(_blockPrefabArray.First(blockPrefab => blockPrefab.GetColor() == randomKey));
 
-            float cameraTopY = m_MainCamera.transform.position.y + m_MainCamera.orthographicSize;
+            var cameraTopY = m_MainCamera.transform.position.y + m_MainCamera.orthographicSize;
 
-            float yPosition = cameraTopY + (creatingCounter * 1f) + 1f;
+            var yPosition = cameraTopY + (creatingCounter * 1f) + 1f;
 
             block.transform.position = new Vector3(
                 cellArray[0, column].transform.position.x,

@@ -42,57 +42,91 @@ namespace Blocks
             switch (colorInGame)
             {
                 case 6:
-                    if (groupSize < 5)
-                        SetSprite(0);
-                    else if (groupSize <= 7)
-                        SetSprite(1);
-                    else if (groupSize <= 9)
-                        SetSprite(2);
-                    else
-                        SetSprite(3);
+                    switch (groupSize)
+                    {
+                        case < 5:
+                            SetSprite(0);
+                            break;
+                        case <= 7:
+                            SetSprite(1);
+                            break;
+                        case <= 9:
+                            SetSprite(2);
+                            break;
+                        default:
+                            SetSprite(3);
+                            break;
+                    }
                     break;
 
                 case 5:
                 case 4:
-                    if (groupSize < 5)
-                        SetSprite(0);
-                    else if (groupSize <= 6)
-                        SetSprite(1);
-                    else if (groupSize <= 8)
-                        SetSprite(2);
-                    else
-                        SetSprite(3);
+                    switch (groupSize)
+                    {
+                        case < 5:
+                            SetSprite(0);
+                            break;
+                        case <= 6:
+                            SetSprite(1);
+                            break;
+                        case <= 8:
+                            SetSprite(2);
+                            break;
+                        default:
+                            SetSprite(3);
+                            break;
+                    }
                     break;
 
                 case 3:
-                    if (groupSize < 5)
-                        SetSprite(0);
-                    else if (groupSize == 5)
-                        SetSprite(1);
-                    else if (groupSize <= 7)
-                        SetSprite(2);
-                    else
-                        SetSprite(3);
+                    switch (groupSize)
+                    {
+                        case < 5:
+                            SetSprite(0);
+                            break;
+                        case 5:
+                            SetSprite(1);
+                            break;
+                        case <= 7:
+                            SetSprite(2);
+                            break;
+                        default:
+                            SetSprite(3);
+                            break;
+                    }
                     break;
 
                 case 2:
-                    if (groupSize < 5)
-                        SetSprite(0);
-                    else if (groupSize == 5)
-                        SetSprite(1);
-                    else if (groupSize == 6)
-                        SetSprite(2);
-                    else
-                        SetSprite(3);
+                    switch (groupSize)
+                    {
+                        case < 5:
+                            SetSprite(0);
+                            break;
+                        case 5:
+                            SetSprite(1);
+                            break;
+                        case 6:
+                            SetSprite(2);
+                            break;
+                        default:
+                            SetSprite(3);
+                            break;
+                    }
                     break;
 
                 case 1:
-                    if (groupSize < 5)
-                        SetSprite(0);
-                    else if (groupSize == 5)
-                        SetSprite(1);
-                    else
-                        SetSprite(3);
+                    switch (groupSize)
+                    {
+                        case < 5:
+                            SetSprite(0);
+                            break;
+                        case 5:
+                            SetSprite(1);
+                            break;
+                        default:
+                            SetSprite(3);
+                            break;
+                    }
                     break;
 
                 default:

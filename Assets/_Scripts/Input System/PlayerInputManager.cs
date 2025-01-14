@@ -1,10 +1,12 @@
 using System;
 using UnityEngine;
 
-namespace Managers
+namespace Input_System
 {
     public class PlayerInputManager : MonoBehaviour
     {
+        [SerializeField] private InputType _inputType;
+        
         public static event Action<Vector2> OnMouseClick;
 
         private Camera m_MainCamera;
@@ -24,9 +26,17 @@ namespace Managers
 
         private void Update()
         {
-            HandleMouseInputNewInputSystem();       // Ney input system
-            // HandleMouseInputOldInputSystem();    // Old input system
-
+            switch (_inputType)
+            {
+                case InputType.NewSystem:
+                    HandleMouseInputNewInputSystem();
+                    break;
+                case InputType.OldSystem:
+                    HandleMouseInputOldInputSystem();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException($"InputType", _inputType, null);
+            }
         }
 
         private void OnDisable()

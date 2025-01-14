@@ -9,10 +9,9 @@ namespace Managers
         [SerializeField] private Board _board;
         
         private readonly HashSet<Cell> m_Visited = new HashSet<Cell>();
-        private readonly Dictionary<Cell, int> m_GroupCache = new Dictionary<Cell, int>();
-        
         private int m_ColorsInGame;
 
+        
         private void Awake()
         {
             m_ColorsInGame = GameManager.GetColorsInGame();
@@ -58,11 +57,10 @@ namespace Managers
         private void UpdateAllBlockSpritesBasedOnGroupSize(int rows, int columns, Cell[,] cellArray)
         {
             m_Visited.Clear();
-            m_GroupCache.Clear();
 
-            for (int row = 0; row < rows; row++)
+            for (var row = 0; row < rows; row++)
             {
-                for (int col = 0; col < columns; col++)
+                for (var col = 0; col < columns; col++)
                 {
                     var currentCell = cellArray[row, col];
             
@@ -75,7 +73,6 @@ namespace Managers
                     foreach (var groupCell in groupCells)
                     {
                         m_Visited.Add(groupCell);
-                        m_GroupCache[groupCell] = groupCells.Count;
                     }
 
                     foreach (var groupCell in groupCells)
