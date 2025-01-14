@@ -112,5 +112,3 @@ The game provides a playing field of colored blocks, where players interact to e
 ---
 
 Feel free to explore the project and contribute! 🎮✨
-
-Bu şekilde, How to Play bölümü oyunun nasıl oynanacağına dair net bir rehber sağlıyor.
