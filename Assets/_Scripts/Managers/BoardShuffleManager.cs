@@ -12,15 +12,18 @@ namespace Managers
 {
     public class BoardShuffleManager : MonoBehaviour
     {
-        [SerializeField] private float _shuffleSpeed;
-
+        [SerializeField] private Board _board;
+        
         public static event Action<int, int, Cell[,]> OnShuffleBoardEnded;
 
         private bool[][] m_VisitedCache;
+        private float m_ShuffleSpeed;
 
 
         private void Awake()
         {
+            m_ShuffleSpeed = _board.GetMoveBlockDownSpeed();
+            
             Board.OnBoardCreated += HandleOnBoardCreated;
             Board.OnClearRegionEnded += HandleOnClearRegionEnded;
         }
@@ -170,7 +173,7 @@ namespace Managers
                     block.SetCell(targetCell);
 
                     block.GetAnimation()
-                        .DoMove(targetCell.transform.position, _shuffleSpeed, Ease.Linear)
+                        .DoMove(targetCell.transform.position, m_ShuffleSpeed, Ease.Linear)
                         .Forget();
                 }
             }
@@ -211,7 +214,7 @@ namespace Managers
                     blocks[index].SetCell(cellArray[row, col]);
 
                     blocks[index].GetAnimation()
-                        .DoMove(cellArray[row, col].transform.position, _shuffleSpeed, Ease.Linear)
+                        .DoMove(cellArray[row, col].transform.position, m_ShuffleSpeed, Ease.Linear)
                         .Forget();
 
                     index++;

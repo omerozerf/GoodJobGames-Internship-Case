@@ -225,5 +225,10 @@ namespace Others
         {
             return m_Columns;
         }
+        
+        public float GetMoveBlockDownSpeed()
+        {
+            return _moveBlockDownSpeed;
+        }
     }
 }
