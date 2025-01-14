@@ -1,5 +1,13 @@
 # 🎮 GoodJobGames Internship Case
 
+📌 **Currently Live:**  
+I developed a similar mechanic project that is live in the Karaca mobile app. You can explore it here:  
+👉 [Mobile Karaca App - Bubble Blast](https://omerozerf.notion.site/Mobile-Karaca-App-Bubble-Blast-162443d669db81fcbf7cd233dd9de7b7)
+
+---
+---
+---
+
 Welcome to the **Color Block-Based Game System**! This project is a visually engaging, performance-optimized, and dynamic game system built with Unity. 🧱✨
 
 ---
@@ -20,7 +28,7 @@ The game provides a playing field of colored blocks, where players interact to e
 ## 🛠️ **Technical Details**
 
 ### **Technologies Used**
-- **Unity Game Engine**
+- **Unity Game Engine: Version 6000.0.32f1**
 - **C#**
 - **Third-Party Libraries**:
   - DOTween (for animations)
